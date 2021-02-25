@@ -88,4 +88,12 @@ class QuestionItemModel extends Model
 
         return $value;
     }
+
+    static function checkDelete($item_id)
+    {
+        if (QuestionQuestionnaireItemModel::where('item_id', $item_id)->count() > 0) {
+            return false;
+        }
+        return true;
+    }
 }

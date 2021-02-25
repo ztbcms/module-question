@@ -59,4 +59,27 @@ class Item extends AdminController
             return self::makeJsonReturn(true, [], '操作失败');
         }
     }
+
+    /**
+     * 删除题目
+     * @return \think\response\Json
+     */
+    function delete()
+    {
+        $item_id = request()->post('item_id');
+
+        if (!QuestionItemModel::checkDelete($item_id)) {
+            return self::makeJsonReturn(false, [], '有关联记录，不能删除');
+        }
+        $questionItem = QuestionItemModel::where('item_id', $item_id)
+            ->findOrEmpty();
+        if ($questionItem->isEmpty()) {
+            return self::makeJsonReturn(false, [], '未找到该记录');
+        }
+        if ($questionItem->delete()) {
+            return self::makeJsonReturn(true, [], '删除成功');
+        } else {
+            return self::makeJsonReturn(false, [], '操作失败');
+        }
+    }
 }

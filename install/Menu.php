@@ -24,6 +24,13 @@ return array(
                 "name"   => "题目管理",
                 "remark" => "",
             ],
+            [
+                "route"  => "question/questionnaire/index",
+                "type"   => 0,
+                "status" => 1,
+                "name"   => "问卷管理",
+                "remark" => "",
+            ],
         ],
     ),
 );

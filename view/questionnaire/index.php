@@ -2,9 +2,11 @@
     <div id="app" style="padding: 8px;" v-cloak>
         <div>
             <el-card>
-                <h3>题目列表</h3>
+                <h3>问卷列表</h3>
                 <div>
-                    <el-button @click="show=true;edit_item={}" type="primary">添加题目</el-button>
+                    <el-link href="{:url('question/questionnaire/edit')}">
+                        <el-button type="primary">添加问卷</el-button>
+                    </el-link>
                 </div>
                 <div style="margin-top: 20px">
                     <el-table
@@ -12,30 +14,37 @@
                             border
                             style="width: 100%">
                         <el-table-column
-                                prop="item_id"
+                                prop="questionnaire_id"
                                 label="编号"
                                 width="180">
                         </el-table-column>
                         <el-table-column
-                                prop="content"
+                                prop="title"
                                 label="问题">
                         </el-table-column>
                         <el-table-column
-                                prop="item_kind_text"
-                                label="种类"
+                                align="center"
+                                prop="item_count"
+                                label="问题数量"
                                 width="180">
                         </el-table-column>
                         <el-table-column
-                                prop="item_type_text"
-                                label="类型"
+                                align="center"
+                                prop="submit_count"
+                                label="提交数量"
                                 width="180">
+                        </el-table-column>
+                        <el-table-column
+                                prop="create_time"
+                                label="创建时间"
+                                width="200">
                         </el-table-column>
                         <el-table-column
                                 label="操作"
                                 width="200">
                             <template slot-scope="props">
-                                <el-button @click="editItemEvent(props.row)" type="primary">编辑</el-button>
-                                <el-button @click="deleteItemEvent(props.row)" type="danger">删除</el-button>
+                                <el-button @click="editEvent(props.row)" type="primary">编辑</el-button>
+                                <el-button @click="deleteEvent(props.row)" type="danger">删除</el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -52,13 +61,8 @@
                     </div>
                 </div>
             </el-card>
-            <div>
-                <question-edit-item @success="getList" :item="edit_item" @close="show=false"
-                                    :show.sync="show"></question-edit-item>
-            </div>
         </div>
     </div>
-    {include file="/components/edit-item"}
     <!--    如果公共方法没有定义 window.__vueList 打开这个注释 -->
     {include file="/components/vue-list"}
     <script>
@@ -72,11 +76,11 @@
                     edit_item: {},
                 },
                 methods: {
-                    deleteItemEvent: function (item) {
+                    deleteEvent: function (item) {
                         var _this = this
-                        this.$confirm("是否确认删除 " + item.content + ' ?').then(() => {
-                            this.httpPost("{:api_url('question/item/delete')}", {
-                                item_id: item.item_id
+                        this.$confirm("是否确认删除 " + item.title + ' ?').then(() => {
+                            this.httpPost("{:api_url('question/questionnaire/delete')}", {
+                                questionnaire_id: item.questionnaire_id
                             }, function (res) {
                                 if (res.status) {
                                     _this.$message.success('删除成功')
@@ -88,14 +92,13 @@
                         }).catch(err => {
                         })
                     },
-                    editItemEvent: function (item) {
-                        this.show = true
-                        this.edit_item = item
+                    editEvent: function (item) {
+                        location.href = "{:api_url('question/questionnaire/edit',['questionnaire_id'=>''])}" + item.questionnaire_id
                     },
                     getList: function () {
                         var _this = this;
                         $.ajax({
-                            url: "{:api_url('question/item/index')}",
+                            url: "{:api_url('question/questionnaire/index')}",
                             data: Object.assign({
                                 page: this.currentPage,
                             }, this.searchForm),

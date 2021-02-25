@@ -27,3 +27,29 @@ CREATE TABLE `cms_question_item_option` (
   `delete_time` int(11) DEFAULT '0' COMMENT '删除时间',
   PRIMARY KEY (`item_option_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- ----------------------------
+-- 问卷表
+-- ----------------------------
+DROP TABLE IF EXISTS `cms_question_questionnaire`;
+CREATE TABLE `cms_question_questionnaire` (
+  `questionnaire_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `title` varchar(256) DEFAULT '' COMMENT '问卷标题',
+  `create_time` int(11) DEFAULT '0' COMMENT '创建时间',
+  `update_time` int(11) DEFAULT '0' COMMENT '更新时间',
+  `delete_time` int(11) DEFAULT '0' COMMENT '删除时间',
+  PRIMARY KEY (`questionnaire_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- ----------------------------
+-- 问卷表-题目
+-- ----------------------------
+DROP TABLE IF EXISTS `cms_question_questionnaire_item`;
+CREATE TABLE `cms_question_questionnaire_item` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `questionnaire_id` int(11) DEFAULT '0' COMMENT '关联问卷id',
+  `item_id` int(11) DEFAULT '0' COMMENT '关联题目id',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
