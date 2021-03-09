@@ -100,7 +100,7 @@
                                         var item = _this.lists[index]
                                         _this.makeChart(index, item.option_values_analysis.list, item.option_values_analysis.total)
                                     }
-                                }, 2000)
+                                }, 1000)
                             }
                         })
                     },

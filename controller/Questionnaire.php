@@ -196,6 +196,13 @@ class Questionnaire extends AdminController
         return View::fetch('answer_records_detail');
     }
 
+    /**
+     * 问卷分析
+     * @return string|\think\response\Json
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\db\exception\DataNotFoundException
+     */
     function analysis()
     {
         if (request()->isAjax()) {

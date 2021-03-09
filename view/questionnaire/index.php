@@ -56,9 +56,10 @@
                         </el-table-column>
                         <el-table-column
                                 label="操作"
-                                width="200">
+                                width="260">
                             <template slot-scope="props">
                                 <el-button @click="editEvent(props.row)" type="primary">编辑</el-button>
+                                <el-button @click="analysisEvent(props.row)" type="success">分析</el-button>
                                 <el-button @click="deleteEvent(props.row)" type="danger">删除</el-button>
                             </template>
                         </el-table-column>
@@ -114,6 +115,9 @@
                     },
                     submitPage: function (item) {
                         location.href = "{:api_url('question/questionnaire/answer_records',['questionnaire_id'=>''])}" + item.questionnaire_id
+                    },
+                    analysisEvent: function (item) {
+                        location.href = "{:api_url('question/questionnaire/analysis',['questionnaire_id'=>''])}" + item.questionnaire_id
                     },
                     editEvent: function (item) {
                         location.href = "{:api_url('question/questionnaire/edit',['questionnaire_id'=>''])}" + item.questionnaire_id
