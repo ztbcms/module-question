@@ -27,7 +27,12 @@ class Questionnaire extends AdminController
     function index()
     {
         if (request()->isAjax()) {
-            $data = QuestionQuestionnaireModel::where([])
+            $where = [];
+            $keyword = request()->param('keyword', '');
+            if ($keyword != '') {
+                $where[] = ['title', 'like', "%{$keyword}%"];
+            }
+            $data = QuestionQuestionnaireModel::where($where)
                 ->append(['item_count', 'submit_count'])
                 ->order('questionnaire_id', 'DESC')
                 ->paginate(20);
@@ -189,5 +194,56 @@ class Questionnaire extends AdminController
                 'ok');
         }
         return View::fetch('answer_records_detail');
+    }
+
+    function analysis()
+    {
+        if (request()->isAjax()) {
+            $questionnaire_id = request()->param('questionnaire_id', 0);
+            $questionnaire = QuestionQuestionnaireModel::where('questionnaire_id', $questionnaire_id)->findOrEmpty();
+            $questionnaire_items = QuestionQuestionnaireItemModel::where('questionnaire_id', $questionnaire_id)
+                ->append(['option_values_analysis'])
+                ->with(['bind_item'])
+                ->withAttr('option_values_analysis', function ($value, $data) use ($questionnaire_id)
+                {
+                    $item_type = $data['item_type'] ?? 0;
+                    if ($item_type == QuestionItemModel::ITEM_TYPE_FILL) {
+                        //如果是填空题。默认选出三个最高纪录
+                        $option_values_analysis = QuestionQuestionnaireAnswerItemModel::scope('analysis',
+                            $questionnaire_id, $data['item_id'])
+                            ->limit(0, 4)->select();
+                        $total = QuestionQuestionnaireAnswerItemModel::where('questionnaire_id',
+                            $questionnaire_id)
+                            ->where('item_id',
+                                $data['item_id'])->count();
+                        return [
+                            'list'      => $option_values_analysis,
+                            'total'     => $total,
+                            'item_type' => $data['item_type'] ?? 0
+                        ];
+                    } else {
+                        $option_values_analysis = QuestionQuestionnaireAnswerItemModel::scope('analysis',
+                            $questionnaire_id, $data['item_id'])->select();
+                        $total = 0;
+                        foreach ($option_values_analysis as $analysis) {
+                            $total += $analysis["count"];
+                        }
+                        return [
+                            'list'      => $option_values_analysis,
+                            'total'     => $total,
+                            'item_type' => $data['item_type'] ?? 0
+                        ];
+                    }
+                })
+                ->order('number', 'ASC')
+                ->select();
+            return self::makeJsonReturn(true,
+                [
+                    'questionnaire_items' => $questionnaire_items,
+                    'questionnaire'       => $questionnaire
+                ],
+                'ok');
+        }
+        return View::fetch('analysis');
     }
 }

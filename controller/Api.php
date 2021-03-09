@@ -10,6 +10,7 @@ namespace app\question\controller;
 
 
 use app\BaseController;
+use app\question\model\QuestionQuestionnaireAnswerItemModel;
 use app\question\model\QuestionQuestionnaireAnswerModel;
 use app\question\model\QuestionQuestionnaireModel;
 
@@ -33,6 +34,16 @@ class Api extends BaseController
         }
         $questionnaire_answer->status = QuestionQuestionnaireAnswerModel::STATUS_CONFIRM;
         $questionnaire_answer->confirm_time = time();
+        $questionnaire_answer->transaction(function () use ($questionnaire_answer)
+        {
+            //关联的答题记录也需要更新状态
+            $questionnaire_answer->save();
+            QuestionQuestionnaireAnswerItemModel::where('questionnaire_answer_id',
+                $questionnaire_answer->questionnaire_answer_id)
+                ->update([
+                    'status' => QuestionQuestionnaireAnswerModel::STATUS_CONFIRM
+                ]);
+        });
         if ($questionnaire_answer->save()) {
             return self::makeJsonReturn(true, [], 'ok');
         } else {
@@ -50,7 +61,7 @@ class Api extends BaseController
         $questionnaire_id = request()->param('questionnaire_id', 0);
         $item_id = request()->param('item_id', 0);
         $option_values = request()->param('option_values', 0);
-        $target = 1;
+        $target = request()->param('target', 1);
         $target_type = 'user_id';
 
         $questionnaire_answer = QuestionQuestionnaireAnswerModel::where('questionnaire_answer_id',

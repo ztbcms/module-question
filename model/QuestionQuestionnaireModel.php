@@ -73,6 +73,8 @@ class QuestionQuestionnaireModel extends Model
 
     function getSubmitCountAttr($value, $data)
     {
-        return QuestionQuestionnaireAnswerModel::where('questionnaire_id', $data['questionnaire_id'])->count();
+        return QuestionQuestionnaireAnswerModel::where('questionnaire_id', $data['questionnaire_id'])
+            ->where('status', QuestionQuestionnaireAnswerModel::STATUS_CONFIRM)
+            ->count();
     }
 }

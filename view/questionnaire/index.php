@@ -3,10 +3,22 @@
         <div>
             <el-card>
                 <h3>问卷列表</h3>
-                <div>
-                    <el-link href="{:url('question/questionnaire/edit')}">
-                        <el-button type="primary">添加问卷</el-button>
-                    </el-link>
+                <div style="display: flex;justify-content: space-between">
+                    <div>
+                        <el-form :inline="true" :model="search_where" class="demo-form-inline">
+                            <el-form-item>
+                                <el-input v-model="search_where.keyword" placeholder="请输入问卷标题"></el-input>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-button type="primary" @click="searchSubmit">查询</el-button>
+                            </el-form-item>
+                        </el-form>
+                    </div>
+                    <div>
+                        <el-link href="{:url('question/questionnaire/edit')}">
+                            <el-button type="primary">添加问卷</el-button>
+                        </el-link>
+                    </div>
                 </div>
                 <div style="margin-top: 20px">
                     <el-table
@@ -77,8 +89,13 @@
                     lists: [],
                     show: false,
                     edit_item: {},
+                    search_where: {}
                 },
                 methods: {
+                    searchSubmit: function () {
+                        this.currentPage = 1
+                        this.getList()
+                    },
                     deleteEvent: function (item) {
                         var _this = this
                         this.$confirm("是否确认删除 " + item.title + ' ?').then(() => {
@@ -107,7 +124,7 @@
                             url: "{:api_url('question/questionnaire/index')}",
                             data: Object.assign({
                                 page: this.currentPage,
-                            }, this.searchForm),
+                            }, this.search_where),
                             dataType: 'json',
                             type: 'get',
                             success: function (res) {

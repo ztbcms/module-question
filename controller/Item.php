@@ -23,6 +23,18 @@ class Item extends AdminController
     {
         if (request()->isAjax()) {
             $where = [];
+            $keyword = request()->param('keyword', '');
+            $item_kind = request()->param('item_kind', '');
+            $item_type = request()->param('item_type', '');
+            if ($keyword != '') {
+                $where[] = ['content', 'like', "%{$keyword}%"];
+            }
+            if ($item_kind !== '') {
+                $where[] = ['item_kind', '=', $item_kind];
+            }
+            if ($item_type !== '') {
+                $where[] = ['item_type', '=', $item_type];
+            }
             $lists = QuestionItemModel::where($where)
                 ->with(['item_options'])
                 ->append(['item_kind_text', 'item_type_text'])

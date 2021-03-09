@@ -87,6 +87,7 @@ CREATE TABLE `cms_question_questionnaire_answer_item` (
   `option_value` varchar(1024) DEFAULT '' COMMENT '回答选项值',
   `is_fill` tinyint(1) DEFAULT '0' COMMENT '是否填空题',
   `fill_number` int(11) DEFAULT '0' COMMENT '填空项码',
+  `status` tinyint(1) DEFAULT '0' COMMENT '是否提交，不提交不做统计',
   `create_time` int(11) DEFAULT '0' COMMENT '创建时间',
   `update_time` int(11) DEFAULT '0' COMMENT '更新时间',
   `delete_time` int(11) DEFAULT '0' COMMENT '删除时间',

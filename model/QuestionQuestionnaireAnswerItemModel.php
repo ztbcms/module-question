@@ -19,4 +19,14 @@ class QuestionQuestionnaireAnswerItemModel extends Model
     protected $defaultSoftDelete = 0;
     protected $name = 'question_questionnaire_answer_item';
     protected $pk = 'questionnaire_answer_item_id';
+
+
+    function scopeAnalysis($query, $questionnaire_id, $item_id)
+    {
+        $query->where('questionnaire_id',
+            $questionnaire_id)
+            ->where('status', QuestionQuestionnaireAnswerModel::STATUS_CONFIRM)
+            ->where('item_id', $item_id)->field('count("questionnaire_answer_item_id") as count,option_value')
+            ->group('option_value');
+    }
 }

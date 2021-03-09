@@ -44,7 +44,7 @@ class QuestionQuestionnaireAnswerModel extends Model
         {
             $query->where('questionnaire_answer_id', $questionnaire_answer_id)->where('item_id', $item_id);
         });
-        foreach ($option_values as $option_value) {
+        foreach ($option_values as $index => $option_value) {
             $option_value = trim($option_value);
             $is_fill = 1;
             if ($item->item_type != QuestionItemModel::ITEM_TYPE_FILL) {
@@ -67,9 +67,19 @@ class QuestionQuestionnaireAnswerModel extends Model
             $answer_item->item_id = $item_id;
             $answer_item->option_value = $option_value;
             $answer_item->is_fill = $is_fill;
+            $answer_item->fill_number = $is_fill ? $index + 1 : 0;
             $answer_item->save();
         }
         Db::commit();
+    }
+
+    function getConfirmTimeAttr($value)
+    {
+        if ($value == 0) {
+            return "未提交";
+        } else {
+            return date("Y-m-d H:i:s", $value);
+        }
     }
 
     /**

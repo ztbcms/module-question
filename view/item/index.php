@@ -3,10 +3,37 @@
         <div>
             <el-card>
                 <h3>题目列表</h3>
-                <div>
-                    <el-button @click="show=true;edit_item={}" type="primary">添加题目</el-button>
+                <div style="display: flex;justify-content: space-between">
+                    <div>
+                        <el-form :inline="true" :model="search_where" class="demo-form-inline">
+                            <el-form-item>
+                                <el-input v-model="search_where.keyword" placeholder="请问题目关键字"></el-input>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-select v-model="search_where.item_kind" placeholder="题目种类">
+                                    <el-option label="全部" value=""></el-option>
+                                    <el-option label="问卷" value="0"></el-option>
+                                    <el-option label="试题" value="1"></el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-select v-model="search_where.item_type" placeholder="题目类型">
+                                    <el-option label="全部" value=""></el-option>
+                                    <el-option label="单选" value="0"></el-option>
+                                    <el-option label="多选" value="1"></el-option>
+                                    <el-option label="填空" value="2"></el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-button type="primary" @click="searchSubmit">查询</el-button>
+                            </el-form-item>
+                        </el-form>
+                    </div>
+                    <div>
+                        <el-button @click="show=true;edit_item={}" type="primary">添加题目</el-button>
+                    </div>
                 </div>
-                <div style="margin-top: 20px">
+                <div>
                     <el-table
                             :data="lists"
                             border
@@ -70,8 +97,13 @@
                     lists: [],
                     show: false,
                     edit_item: {},
+                    search_where: {}
                 },
                 methods: {
+                    searchSubmit: function () {
+                        this.currentPage = 1
+                        this.getList()
+                    },
                     deleteItemEvent: function (item) {
                         var _this = this
                         this.$confirm("是否确认删除 " + item.content + ' ?').then(() => {
@@ -98,7 +130,7 @@
                             url: "{:api_url('question/item/index')}",
                             data: Object.assign({
                                 page: this.currentPage,
-                            }, this.searchForm),
+                            }, this.search_where),
                             dataType: 'json',
                             type: 'get',
                             success: function (res) {
