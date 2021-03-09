@@ -1,9 +1,7 @@
--- ----------------------------
--- 题目表
--- ----------------------------
-DROP TABLE IF EXISTS `cms_question_item`;
 
--- ----------------------------
--- 题目表-选项
--- ----------------------------
+DROP TABLE IF EXISTS `cms_question_item`;
 DROP TABLE IF EXISTS `cms_question_item_option`;
+DROP TABLE IF EXISTS `cms_question_questionnaire`;
+DROP TABLE IF EXISTS `cms_question_questionnaire_item`;
+DROP TABLE IF EXISTS `cms_question_questionnaire_answer`;
+DROP TABLE IF EXISTS `cms_question_questionnaire_answer_item`;

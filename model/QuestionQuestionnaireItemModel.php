@@ -29,4 +29,12 @@ class QuestionQuestionnaireItemModel extends Model
             ->append(['item_type_text'])
             ->bind(['content', 'item_type', 'item_type_text']);
     }
+
+    public function bindApiItem()
+    {
+        return $this->hasOne(QuestionItemModel::class, 'item_id', 'item_id')
+            ->with(['item_options'])
+            ->append(['item_type_text'])
+            ->bind(['content', 'item_type', 'item_type_text', 'item_options']);
+    }
 }

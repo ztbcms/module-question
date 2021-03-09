@@ -7,6 +7,10 @@
                     <el-form-item label="问卷标题">
                         <el-input style="width: 500px" v-model="form.title"></el-input>
                     </el-form-item>
+                    <el-form-item label="问卷简介">
+                        <el-input style="width: 500px" type="textarea" placeholder="简单描述问卷"
+                                  v-model="form.description"></el-input>
+                    </el-form-item>
                     <el-form-item label="问卷题目">
                         <div>
                             <div style="display: flex;align-items: center">
@@ -109,7 +113,8 @@
                                 var detail = res.data.detail
                                 _this.form = {
                                     questionnaire_id: detail.questionnaire_id,
-                                    title: detail.title
+                                    title: detail.title,
+                                    description: detail.description,
                                 }
                                 _this.select_item_list = detail.item_list
                             }

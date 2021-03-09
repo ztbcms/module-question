@@ -2,11 +2,11 @@
     <div id="app" style="padding: 8px;" v-cloak>
         <div>
             <el-card>
-                <h3>问卷列表</h3>
                 <div>
-                    <el-link href="{:url('question/questionnaire/edit')}">
-                        <el-button type="primary">添加问卷</el-button>
-                    </el-link>
+                    <el-breadcrumb separator="/">
+                        <el-breadcrumb-item><a href="{:api_url('/question/questionnaire/index')}">问卷列表</a></el-breadcrumb-item>
+                        <el-breadcrumb-item>{{questionnaire.title}}</el-breadcrumb-item>
+                    </el-breadcrumb>
                 </div>
                 <div style="margin-top: 20px">
                     <el-table
@@ -16,38 +16,30 @@
                         <el-table-column
                                 prop="questionnaire_id"
                                 label="编号"
-                                width="180">
+                                width="80">
                         </el-table-column>
                         <el-table-column
-                                prop="title"
-                                label="问题">
-                        </el-table-column>
-                        <el-table-column
-                                align="center"
-                                prop="item_count"
-                                label="问题数量"
-                                width="180">
+                                prop="target"
+                                label="姓名"
+                                min-width="200"
+                        >
                         </el-table-column>
                         <el-table-column
                                 align="center"
-                                label="提交数量"
-                                width="180">
-                            <template slot-scope="props">
-                                <el-link type="primary" @click="submitPage(props.row)">{{props.row.submit_count}}
-                                </el-link>
-                            </template>
-                        </el-table-column>
-                        <el-table-column
                                 prop="create_time"
-                                label="创建时间"
-                                width="200">
+                                label="起始时间"
+                                min-width="200">
+                        </el-table-column>
+                        <el-table-column
+                                prop="confirm_time"
+                                label="完成时间"
+                                min-width="200">
                         </el-table-column>
                         <el-table-column
                                 label="操作"
-                                width="200">
+                                min-width="200">
                             <template slot-scope="props">
-                                <el-button @click="editEvent(props.row)" type="primary">编辑</el-button>
-                                <el-button @click="deleteEvent(props.row)" type="danger">删除</el-button>
+                                <el-button @click="detailEvent(props.row)" type="primary">详情</el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -74,44 +66,29 @@
                 el: '#app',
                 mixins: [window.__vueList],
                 data: {
+                    questionnaire_id: "<?php echo $_GET['questionnaire_id'] ?? 0?>",
                     lists: [],
                     show: false,
                     edit_item: {},
+                    questionnaire: {}
                 },
                 methods: {
-                    deleteEvent: function (item) {
-                        var _this = this
-                        this.$confirm("是否确认删除 " + item.title + ' ?').then(() => {
-                            this.httpPost("{:api_url('question/questionnaire/delete')}", {
-                                questionnaire_id: item.questionnaire_id
-                            }, function (res) {
-                                if (res.status) {
-                                    _this.$message.success('删除成功')
-                                    _this.getList()
-                                } else {
-                                    _this.$message.error(res.msg)
-                                }
-                            })
-                        }).catch(err => {
-                        })
-                    },
-                    submitPage: function (item) {
-                        location.href = "{:api_url('question/questionnaire/answer_records',['questionnaire_id'=>''])}" + item.questionnaire_id
-                    },
-                    editEvent: function (item) {
-                        location.href = "{:api_url('question/questionnaire/edit',['questionnaire_id'=>''])}" + item.questionnaire_id
+                    detailEvent: function (item) {
+                        location.href = "{:api_url('question/questionnaire/answer_records_detail',['questionnaire_answer_id'=>''])}" + item.questionnaire_answer_id
                     },
                     getList: function () {
                         var _this = this;
                         $.ajax({
-                            url: "{:api_url('question/questionnaire/index')}",
+                            url: "{:api_url('question/questionnaire/answer_records')}",
                             data: Object.assign({
+                                questionnaire_id: this.questionnaire_id,
                                 page: this.currentPage,
                             }, this.searchForm),
                             dataType: 'json',
                             type: 'get',
                             success: function (res) {
-                                _this.handListData(res)
+                                _this.questionnaire = res.data.questionnaire
+                                _this.handListData({data: res.data.lists})
                             }
                         })
                     },

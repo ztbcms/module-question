@@ -40,10 +40,11 @@ class QuestionQuestionnaireModel extends Model
         }
         //增加新的选项
         $saveData = [];
-        foreach ($item_ids as $item_id) {
+        foreach ($item_ids as $number => $item_id) {
             $saveData[] = [
                 'questionnaire_id' => $questionnaire_id,
                 'item_id'          => $item_id ?? 0,
+                'number'           => $number + 1
             ];
         }
         $questionnaire_item = new QuestionQuestionnaireItemModel();
@@ -53,7 +54,15 @@ class QuestionQuestionnaireModel extends Model
     function itemList()
     {
         return $this->hasMany(QuestionQuestionnaireItemModel::class, 'questionnaire_id', 'questionnaire_id')
+            ->order('number', 'ASC')
             ->with('bind_item')->hidden(['questionnaire_id', 'id']);
+    }
+
+    function itemApiList()
+    {
+        return $this->hasMany(QuestionQuestionnaireItemModel::class, 'questionnaire_id', 'questionnaire_id')
+            ->order('number', 'ASC')
+            ->with('bind_api_item')->hidden(['questionnaire_id', 'id']);
     }
 
     function getItemCountAttr($value, $data)
@@ -62,8 +71,8 @@ class QuestionQuestionnaireModel extends Model
             ->count();
     }
 
-    function getSubmitCountAttr()
+    function getSubmitCountAttr($value, $data)
     {
-        return 0;
+        return QuestionQuestionnaireAnswerModel::where('questionnaire_id', $data['questionnaire_id'])->count();
     }
 }

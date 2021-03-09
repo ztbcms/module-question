@@ -36,6 +36,7 @@ DROP TABLE IF EXISTS `cms_question_questionnaire`;
 CREATE TABLE `cms_question_questionnaire` (
   `questionnaire_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `title` varchar(256) DEFAULT '' COMMENT '问卷标题',
+  `description` varchar(2048) DEFAULT '' COMMENT '问卷介绍',
   `create_time` int(11) DEFAULT '0' COMMENT '创建时间',
   `update_time` int(11) DEFAULT '0' COMMENT '更新时间',
   `delete_time` int(11) DEFAULT '0' COMMENT '删除时间',
@@ -51,5 +52,45 @@ CREATE TABLE `cms_question_questionnaire_item` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `questionnaire_id` int(11) DEFAULT '0' COMMENT '关联问卷id',
   `item_id` int(11) DEFAULT '0' COMMENT '关联题目id',
+  `number` int(11) DEFAULT '0' COMMENT '题号',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- ----------------------------
+-- 问卷表-回答
+-- ----------------------------
+DROP TABLE IF EXISTS `cms_question_questionnaire_answer`;
+CREATE TABLE `cms_question_questionnaire_answer` (
+  `questionnaire_answer_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `questionnaire_id` int(11) DEFAULT NULL,
+  `target` varchar(32) DEFAULT '' COMMENT '回答来源，例如用户的id',
+  `target_type` varchar(32) DEFAULT '' COMMENT '回答来源标识，例如 user_id',
+  `status` tinyint(1) DEFAULT '0' COMMENT '状态 0 未提交、1已提交',
+  `confirm_time` int(11) DEFAULT '0' COMMENT '回答结束时间',
+  `create_time` int(11) DEFAULT '0' COMMENT '创建时间',
+  `update_time` int(11) DEFAULT '0' COMMENT '更新时间',
+  `delete_time` int(11) DEFAULT '0' COMMENT '删除时间',
+  PRIMARY KEY (`questionnaire_answer_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- ----------------------------
+-- 问卷表-回答题目
+-- ----------------------------
+DROP TABLE IF EXISTS `cms_question_questionnaire_answer_item`;
+CREATE TABLE `cms_question_questionnaire_answer_item` (
+  `questionnaire_answer_item_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `questionnaire_answer_id` int(11) DEFAULT NULL,
+  `questionnaire_id` int(11) DEFAULT NULL,
+  `item_id` int(11) DEFAULT NULL COMMENT '题目id',
+  `option_value` varchar(1024) DEFAULT '' COMMENT '回答选项值',
+  `is_fill` tinyint(1) DEFAULT '0' COMMENT '是否填空题',
+  `fill_number` int(11) DEFAULT '0' COMMENT '填空项码',
+  `create_time` int(11) DEFAULT '0' COMMENT '创建时间',
+  `update_time` int(11) DEFAULT '0' COMMENT '更新时间',
+  `delete_time` int(11) DEFAULT '0' COMMENT '删除时间',
+  PRIMARY KEY (`questionnaire_answer_item_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
