@@ -59,7 +59,7 @@ class QuestionQuestionnaireAnswerModel extends Model
                 $option_value_is_exist = QuestionItemOptionModel::where('item_id', $item_id)
                     ->where('option_value', $option_value)
                     ->count();
-                throw_if($option_value_is_exist == 0, new\Exception('选项不存在'));
+                throw_if($option_value_is_exist == 0, new \Exception('选项不存在'));
             }
             $answer_item = new QuestionQuestionnaireAnswerItemModel();
             $answer_item->questionnaire_id = $questionnaire_answer->questionnaire_id;
