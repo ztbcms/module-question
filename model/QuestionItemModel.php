@@ -46,12 +46,15 @@ class QuestionItemModel extends Model
         }
         //增加新的选项
         $saveData = [];
+
         foreach ($options as $option) {
             $saveData[] = [
                 'item_id'          => $item_id,
                 'option_value'     => $option['option_value'] ?? '',
                 'option_img'       => $option['option_img'] ?? '',
                 'option_fill_type' => $option['option_fill_type'] ?? '',
+                'option_true' => $option['option_true'] == true ?'1':'',
+                'reference_answer' => $option['reference_answer'] ?? '',
             ];
         }
         $question_item_option = new QuestionItemOptionModel();

@@ -44,8 +44,20 @@
                         </div>
                         <div>
                             <div v-for="(item,index) in options" style="display: flex;align-items: center">
+                                <el-radio-group v-model="item.option_true" v-if="form.item_kind==1 && item.option_type==0">
+                                    <el-radio :label="1">&nbsp;</el-radio>
+                                </el-radio-group>
+                                <el-checkbox-group v-model="item.option_true"  v-if="form.item_kind==1 && item.option_type==1">
+                                    <el-checkbox :label="1">&nbsp;</el-checkbox>
+                                </el-checkbox-group>
+
                                 <div>
                                     <b>填空项{{index+1}}</b> <span style="padding-left: 10px;">{{item.option_value}}</span>
+                                    <el-input placeholder="请输入参考答案"
+                                              v-if="form.item_kind==1 && item.option_type==2"
+                                              type="text"
+                                              style="width: 150px; margin-top:5px;"
+                                              v-model="item.reference_answer" ></el-input>
                                 </div>
                                 <div style="padding-left:10px;display: flex">
                                     <i
@@ -82,8 +94,15 @@
                         </div>
                         <div>
                             <div v-for="(item,index) in options" style="display: flex;align-items: center">
+                                <el-radio-group v-model="item.option_true" v-if="form.item_kind==1 && item.option_type==0">
+                                    <el-radio :label="1">&nbsp;</el-radio>
+                                </el-radio-group>
+                                <el-checkbox-group v-model="item.option_true"  v-if="form.item_kind==1 && item.option_type==1">
+                                    <el-checkbox label="1">&nbsp;</el-checkbox>
+                                </el-checkbox-group>
                                 <div>
-                                    <b>选项{{index+1}}</b> <span style="padding-left: 10px;">{{item.option_value}}</span>
+                                    <b>选项{{index+1}}</b>
+                                    <span style="padding-left: 10px;">{{item.option_value}}</span>
                                 </div>
                                 <div v-if="item.option_img">
                                     <img style="padding-left: 10px;display: flex;width: 30px;height: 30px;line-height: 30px"
@@ -99,6 +118,8 @@
                             </div>
                         </div>
                     </el-form-item>
+
+
                 </el-form>
             </div>
             <div slot="footer" class="dialog-footer">
@@ -132,15 +153,25 @@
             },
             data() {
                 return {
+                    count: 1,
                     fill_options: [{
                         option_value: "文本",
                         option_fill_type: '0',
+                        option_type:'2',
+                        option_true:'',
+                        reference_answer: ''
                     }, {
                         option_value: "数值",
                         option_fill_type: '1',
+                        option_type:'2',
+                        option_true:'',
+                        reference_answer: ''
                     }],
                     option_value: "",
+                    option_type:'1',
+                    option_true:'',
                     option_img: "",
+                    reference_answer: '',
                     options: [],
                     form: {
                         item_kind: "0",
@@ -185,6 +216,7 @@
                     }
                     form_data['options'] = this.options
                     var _this = this
+
                     this.httpPost('{:url("question/item/edit")}', form_data, function (res) {
                         console.log(res)
                         if (res.status) {
@@ -195,7 +227,6 @@
                             _this.$message.error(res.msg)
                         }
                     })
-                    console.log('form_data', form_data)
                 },
                 deleteOptionEvent: function (index) {
                     console.log('index', index)
@@ -211,16 +242,21 @@
                     }
                 },
                 addOptionEvent: function () {
+                    var that = this
                     if (!this.option_value) {
                         this.$message.error('请输入选项值')
                         return
                     }
                     this.options.push({
                         option_value: this.option_value,
-                        option_img: this.option_img
+                        option_img: this.option_img,
+                        option_type: that.form.item_type,
+                        option_true: this.option_true
                     })
                     this.option_value = ''
                     this.option_img = ''
+                    this.option_type = ''
+                    this.option_true = ''
                 },
                 onUploadedImage: function (event) {
                     var files = event.detail.files;
@@ -239,7 +275,7 @@
                 },
                 handleClose: function () {
 
-                }
+                },
             }
         });
     })
