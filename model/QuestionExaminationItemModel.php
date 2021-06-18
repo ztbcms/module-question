@@ -31,4 +31,5 @@ class QuestionExaminationItemModel extends Model
             ->append(['item_type_text'])
             ->bind(['content', 'item_type', 'item_type_text', 'item_options']);
     }
+
 }

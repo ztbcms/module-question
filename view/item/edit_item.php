@@ -180,7 +180,7 @@
                     }],
                     option_value: "",
                     option_type:'1',
-                    option_true:'1',
+                    option_true:'',
                     option_img: "",
                     reference_answer: '',
                     option_data:'',
@@ -218,12 +218,12 @@
                         }
 
                         //判断选项是否选择正确答案
-                        if(this.radio_data){
+                        if(this.radio_data && this.form.item_kind == 1){
                             var ifSetOptionTrue='';
                             for(var i=0;i<this.radio_data.length;i++){
                                 ifSetOptionTrue += this.radio_data[i].option_true + ',';
                             }
-                            if(ifSetOptionTrue.indexOf('true') == '-1'){
+                            if(ifSetOptionTrue.indexOf('1') == '-1' && ifSetOptionTrue.indexOf('true') == '-1'){
                                 this.$message.error('请输入题目正确选项')
                                 return
                             }
@@ -235,12 +235,12 @@
                         }
 
                         //判断选项是否选择正确答案
-                        if(this.checkbox_data){
+                        if(this.checkbox_data && this.form.item_kind == 1){
                             var ifSetOptionTrue='';
                             for(var i=0;i<this.checkbox_data.length;i++){
                                 ifSetOptionTrue += this.checkbox_data[i].option_true + ',';
                             }
-                            if(ifSetOptionTrue.indexOf('true') == '-1'){
+                            if(ifSetOptionTrue.indexOf('1') == '-1' && ifSetOptionTrue.indexOf('true') == '-1'){
                                 this.$message.error('请输入题目正确选项')
                                 return
                             }
@@ -257,6 +257,9 @@
                             _this.$message.success('操作成功')
                             _this.$emit('success')
                             _this.$emit('close')
+                            setTimeout(function () {
+                                window.parent.layer.closeAll();
+                            }, 1000);
                         } else {
                             _this.$message.error(res.msg)
                         }

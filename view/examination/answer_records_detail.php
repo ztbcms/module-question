@@ -8,7 +8,7 @@
                         <span style="font-weight: bold">用户：</span>{{examination_answer.target}}
                     </div>
                     <div style="display: flex;align-items: center">
-                        <span style="font-weight: bold">问卷：</span><el-link type="primary" :href="'{:api_url('/question/examination/answer_records',['examination_id'=>''])}'+examination_answer.examination_id">{{examination_answer.title}}</el-link>
+                        <span style="font-weight: bold">试卷：</span><el-link type="primary" :href="'{:api_url('/question/examination/answer_records',['examination_id'=>''])}'+examination_answer.examination_id">{{examination_answer.title}}</el-link>
                     </div>
                 </div>
                 <div style="margin-top: 20px">
@@ -88,7 +88,7 @@
                     lists: [],
                     show: false,
                     edit_item: {},
-                    examination_answer: {}
+                    examination_answer: {},
                 },
                 filters: {
                     fix: function (value) {

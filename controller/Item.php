@@ -52,7 +52,6 @@ class Item extends AdminController
      */
     function edit()
     {
-//        var_dump($_POST);exit;
         $item_id = request()->post('item_id', 0);
         $content = request()->post('content');
         $item_type = request()->post('item_type', 0);

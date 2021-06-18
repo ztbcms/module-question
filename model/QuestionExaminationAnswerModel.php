@@ -109,10 +109,9 @@ class QuestionExaminationAnswerModel extends Model
             ->where('eai.examination_answer_id', $data['examination_answer_id'])
             ->join('question_item_option io', 'eai.item_id = io.item_id', 'left')//题目选项表
             ->field('eai.*,io.option_type,io.option_true')
-            ->fetchSql(true)
+//            ->fetchSql(true)
             ->select();
-        var_dump($item_data);
-        exit;
+
 //            ->toArray();
         $correct_number = 0;
         $checkbox_data = '';
@@ -135,8 +134,7 @@ class QuestionExaminationAnswerModel extends Model
                 $correct_number += 1;
             }
         }
-        return count($item_data);
-//        return  $correct_number;
+        return  $correct_number;
     }
 
 }

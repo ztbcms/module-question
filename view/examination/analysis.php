@@ -24,24 +24,36 @@
                         </el-table-column>
                         <el-table-column
                                 prop="content"
-                                label="题目"
-                                min-width="400"
+                                label="问题"
+                                min-width="200"
                         >
                         </el-table-column>
                         <el-table-column
                                 align="center"
                                 prop="item_type_text"
-                                label="题目类型"
+                                label="类型"
                                 min-width="200">
                         </el-table-column>
                         <el-table-column
-                                label="统计"
-                                min-width="400">
-                            <template slot-scope="props">
-                                <div>
-                                    <canvas :id="'mountNode'+props.$index"></canvas>
-                                </div>
-                            </template>
+                                align="center"
+                                prop="answer"
+                                label="回答"
+                                min-width="200">
+                        </el-table-column>
+
+                        <el-table-column
+                                prop="right_key.option_right_key"
+                                label="正确答案"
+                                min-width="200">
+                        </el-table-column>
+                        <el-table-column
+                                label="正确率"
+                                min-width="100">
+<!--                            <template slot-scope="props">-->
+<!--                                <div>-->
+<!--                                    <canvas :id="'mountNode'+props.$index"></canvas>-->
+<!--                                </div>-->
+<!--                            </template>-->
                         </el-table-column>
                     </el-table>
                     <div style="text-align: center;margin-top: 20px">
@@ -98,7 +110,7 @@
                                 setTimeout(function () {
                                     for (var index in _this.lists) {
                                         var item = _this.lists[index]
-                                        _this.makeChart(index, item.option_values_analysis.list, item.option_values_analysis.total)
+                                        // _this.makeChart(index, item.option_values_analysis.list, item.option_values_analysis.total)
                                     }
                                 }, 1000)
                             }

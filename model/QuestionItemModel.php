@@ -64,17 +64,6 @@ class QuestionItemModel extends Model
                     'reference_answer' => $data['reference_answer'] ?? '',
                 ];
             }
-//            if (isset($option['option_true']) === true) {
-//                $option['option_true'] = 1;
-//            }
-//            $saveData[] = [
-//                'item_id'          => $item_id,
-//                'option_value'     => $option['option_value'] ?? '',
-//                'option_img'       => $option['option_img'] ?? '',
-//                'option_fill_type' => $option['option_fill_type'] ?? '',
-//                'option_true'      => $option['option_true'] ?? 0,
-//                'reference_answer' => $option['reference_answer'] ?? '',
-//            ];
         }
         $question_item_option = new QuestionItemOptionModel();
         return $question_item_option->saveAll($saveData);

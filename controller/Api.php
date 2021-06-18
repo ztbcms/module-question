@@ -151,6 +151,7 @@ class Api extends BaseController
             $examination_answer->examination_id = $examination_id;
             $examination_answer->target = $target;
             $examination_answer->target_type = $target_type;
+            $examination_answer->status = QuestionExaminationAnswerModel::STATUS_CONFIRM;
             $examination_answer->save();
         }
         try {

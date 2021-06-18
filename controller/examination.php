@@ -8,6 +8,7 @@
 namespace app\question\controller;
 
 use app\common\controller\AdminController;
+use app\question\model\QuestionItemOptionModel;
 use think\facade\View;
 use app\question\model\QuestionExaminationModel;
 use app\question\model\ExaminationItemModel;
@@ -172,7 +173,7 @@ class examination extends AdminController
 
             $examination_id = $examination_answer->examination_id;
             $examination_items = QuestionExaminationItemModel::where('examination_id', $examination_id)
-                ->append(['option_values', 'option_values_analysis'])
+                ->append(['option_values', 'option_values_analysis', 'right_key'])
                 ->with(['bind_item'])
                 ->withAttr('option_values_analysis', function ($value, $data) use ($examination_id)
                 {
@@ -196,6 +197,11 @@ class examination extends AdminController
                         $examination_answer_id)->where('item_id', $data['item_id'])->column('option_value');
                     return implode(',', $option_values);
                 })
+                ->withAttr('right_key', function($value, $data) {
+                    return QuestionItemOptionModel::where('item_id',$data['item_id'])
+                        ->field('option_value as option_right_key')
+                        ->find();
+                })
                 ->order('number', 'ASC')
                 ->select();
             return self::makeJsonReturn(true,
@@ -217,7 +223,7 @@ class examination extends AdminController
             $examination_id = request()->param('examination_id', 0);
             $examination = QuestionExaminationModel::where('examination_id', $examination_id)->findOrEmpty();
             $examination_items = QuestionExaminationItemModel::where('examination_id', $examination_id)
-                ->append(['option_values_analysis'])
+                ->append(['option_values_analysis', 'right_key', 'answer'])
                 ->with(['bind_item'])
                 ->withAttr('option_values_analysis', function ($value, $data) use ($examination_id)
                 {
@@ -229,8 +235,8 @@ class examination extends AdminController
                             ->limit(0, 4)->select();
                         $total = QuestionexaminationAnswerItemModel::where('examination_id',
                             $examination_id)
-                            ->where('item_id',
-                                $data['item_id'])->count();
+                            ->where('item_id', $data['item_id'])
+                            ->count();
                         return [
                             'list'      => $option_values_analysis,
                             'total'     => $total,
@@ -240,8 +246,10 @@ class examination extends AdminController
                         $option_values_analysis = QuestionExaminationAnswerItemModel::scope('analysis',
                             $examination_id, $data['item_id'])->select();
                         $total = 0;
+                        $answer = '';
                         foreach ($option_values_analysis as $analysis) {
                             $total += $analysis["count"];
+                            $answer .= $analysis['option_value'] . '/';
                         }
                         return [
                             'list'      => $option_values_analysis,
@@ -250,6 +258,27 @@ class examination extends AdminController
                         ];
                     }
                 })
+                ->withAttr('right_key', function($value, $data) {
+                    return QuestionItemOptionModel::where('item_id',$data['item_id'])
+                        ->field('option_value as option_right_key')
+                        ->find();
+                })
+                ->withAttr('answer', function($value, $data) {
+                    $answer_data = QuestionExaminationAnswerItemModel::where('item_id',$data['item_id'])
+                        ->field('option_value as option_answer')
+                        ->select();
+                    $answer = '';
+                    foreach($answer_data as $key=>$val){
+                        $answer .= $val['option_answer'] .'/';
+                    }
+                    return rtrim($answer, "/");
+                })
+//                ->withAttr('accuracy', function($value, $data) {
+//                    $answer_data = QuestionExaminationAnswerItemModel::where('examination_answer_item_id',$data['examination_answer_item_id'])
+//                        ->field('is_answer_correct')
+//                        ->select();
+//                    return $answer_data['is_answer_correct'];
+//                })
                 ->order('number', 'ASC')
                 ->select();
             return self::makeJsonReturn(true,
