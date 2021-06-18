@@ -223,7 +223,7 @@ class examination extends AdminController
             $examination_id = request()->param('examination_id', 0);
             $examination = QuestionExaminationModel::where('examination_id', $examination_id)->findOrEmpty();
             $examination_items = QuestionExaminationItemModel::where('examination_id', $examination_id)
-                ->append(['option_values_analysis', 'right_key', 'answer'])
+                ->append(['option_values_analysis', 'right_key', 'answer','accuracy'])
                 ->with(['bind_item'])
                 ->withAttr('option_values_analysis', function ($value, $data) use ($examination_id)
                 {
@@ -273,12 +273,24 @@ class examination extends AdminController
                     }
                     return rtrim($answer, "/");
                 })
-//                ->withAttr('accuracy', function($value, $data) {
-//                    $answer_data = QuestionExaminationAnswerItemModel::where('examination_answer_item_id',$data['examination_answer_item_id'])
-//                        ->field('is_answer_correct')
-//                        ->select();
-//                    return $answer_data['is_answer_correct'];
-//                })
+                ->withAttr('accuracy', function($value, $data) {
+                    $answer_data = QuestionExaminationAnswerItemModel::where('item_id',$data['item_id'])
+                        ->field('is_answer_correct')
+                        ->select();
+                    $answer_data2 = [];
+                    foreach ($answer_data as $answer_datum) {
+                        $answer_data2[] = $answer_datum['is_answer_correct'];
+                    }
+                    $str = implode(',',$answer_data2);
+                    $count=substr_count($str,'1');
+                    $answer_count = count($answer_data2);
+                    if($count !== 0 && $answer_count !== 0){
+                        $answer = ($answer_count/$count *  100) . '%';
+                    }else{
+                        $answer = '0%';
+                    }
+                    return $answer;
+                })
                 ->order('number', 'ASC')
                 ->select();
             return self::makeJsonReturn(true,

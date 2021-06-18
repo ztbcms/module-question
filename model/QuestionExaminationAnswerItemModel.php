@@ -25,8 +25,5 @@ class QuestionExaminationAnswerItemModel extends Model
             ->group('option_value');
     }
 
-    function getOptionTrueAttr($value, $data){
-
-    }
 
 }

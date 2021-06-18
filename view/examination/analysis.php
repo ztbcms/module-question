@@ -47,6 +47,7 @@
                                 min-width="200">
                         </el-table-column>
                         <el-table-column
+                                prop="accuracy"
                                 label="正确率"
                                 min-width="100">
 <!--                            <template slot-scope="props">-->
