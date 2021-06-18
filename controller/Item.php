@@ -10,6 +10,7 @@ namespace app\question\controller;
 
 use app\common\controller\AdminController;
 use app\question\model\QuestionItemModel;
+use think\facade\Request;
 use think\facade\View;
 
 class Item extends AdminController
@@ -51,6 +52,7 @@ class Item extends AdminController
      */
     function edit()
     {
+//        var_dump($_POST);exit;
         $item_id = request()->post('item_id', 0);
         $content = request()->post('content');
         $item_type = request()->post('item_type', 0);
@@ -94,4 +96,19 @@ class Item extends AdminController
             return self::makeJsonReturn(false, [], '操作失败');
         }
     }
+
+    //新增/编辑
+    function addQuestion(){
+        $_action = input('_action');
+        //获取题目详情
+        if (Request::isGet() && $_action == 'getDetail') {
+            $item_id = Request::param('item_id', '', 'trim');
+            $res = QuestionItemModel::getDetails($item_id);
+            return json($res);
+        }
+        return view('edit_item');
+    }
+
+
+
 }

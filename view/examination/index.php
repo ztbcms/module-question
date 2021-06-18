@@ -2,27 +2,12 @@
     <div id="app" style="padding: 8px;" v-cloak>
         <div>
             <el-card>
-                <h3>题目列表</h3>
+                <h3>试卷列表</h3>
                 <div style="display: flex;justify-content: space-between">
                     <div>
                         <el-form :inline="true" :model="search_where" class="demo-form-inline">
                             <el-form-item>
-                                <el-input v-model="search_where.keyword" placeholder="请问题目关键字"></el-input>
-                            </el-form-item>
-                            <el-form-item>
-                                <el-select v-model="search_where.item_kind" placeholder="题目种类">
-                                    <el-option label="全部" value=""></el-option>
-                                    <el-option label="问卷" value="0"></el-option>
-                                    <el-option label="试题" value="1"></el-option>
-                                </el-select>
-                            </el-form-item>
-                            <el-form-item>
-                                <el-select v-model="search_where.item_type" placeholder="题目类型">
-                                    <el-option label="全部" value=""></el-option>
-                                    <el-option label="单选" value="0"></el-option>
-                                    <el-option label="多选" value="1"></el-option>
-                                    <el-option label="填空" value="2"></el-option>
-                                </el-select>
+                                <el-input v-model="search_where.keyword" placeholder="请输入试卷标题"></el-input>
                             </el-form-item>
                             <el-form-item>
                                 <el-button type="primary" @click="searchSubmit">查询</el-button>
@@ -30,40 +15,52 @@
                         </el-form>
                     </div>
                     <div>
-                        <el-button @click="addItem" type="primary">添加题目</el-button>
-<!--                        @click="show=true;edit_item={}"-->
+                        <el-link href="{:url('question/examination/edit')}">
+                            <el-button type="primary">添加试卷</el-button>
+                        </el-link>
                     </div>
                 </div>
-                <div>
+                <div style="margin-top: 20px">
                     <el-table
                             :data="lists"
                             border
                             style="width: 100%">
                         <el-table-column
-                                prop="item_id"
+                                prop="examination_id"
                                 label="编号"
                                 width="180">
                         </el-table-column>
                         <el-table-column
-                                prop="content"
+                                prop="title"
                                 label="问题">
                         </el-table-column>
                         <el-table-column
-                                prop="item_kind_text"
-                                label="种类"
+                                align="center"
+                                prop="item_count"
+                                label="问题数量"
                                 width="180">
                         </el-table-column>
                         <el-table-column
-                                prop="item_type_text"
-                                label="类型"
+                                align="center"
+                                label="提交数量"
                                 width="180">
+                            <template slot-scope="props">
+                                <el-link type="primary" @click="submitPage(props.row)">{{props.row.submit_count}}
+                                </el-link>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                                prop="create_time"
+                                label="创建时间"
+                                width="200">
                         </el-table-column>
                         <el-table-column
                                 label="操作"
-                                width="200">
+                                width="260">
                             <template slot-scope="props">
-                                <el-button @click="editItemEvent(props.row.item_id)" type="primary">编辑</el-button>
-                                <el-button @click="deleteItemEvent(props.row)" type="danger">删除</el-button>
+                                <el-button @click="editEvent(props.row)" type="primary">编辑</el-button>
+                                <el-button @click="analysisEvent(props.row)" type="success">分析</el-button>
+                                <el-button @click="deleteEvent(props.row)" type="danger">删除</el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -91,34 +88,20 @@
                 mixins: [window.__vueList],
                 data: {
                     lists: [],
-                    show: true,
+                    show: false,
                     edit_item: {},
                     search_where: {}
                 },
                 methods: {
-                    addItem:function(){
-                        var that = this;
-                        var url = "{:api_url('/question/item/addQuestion')}";
-                        layer.open({
-                            type: 2,
-                            title: '新增题目',
-                            shadeClose: true,
-                            area: ['60%', '60%'],
-                            content: url,
-                            end: function(){
-                                that.getList()
-                            }
-                        });
-                    },
                     searchSubmit: function () {
                         this.currentPage = 1
                         this.getList()
                     },
-                    deleteItemEvent: function (item) {
+                    deleteEvent: function (item) {
                         var _this = this
-                        this.$confirm("是否确认删除 " + item.content + ' ?').then(() => {
-                            this.httpPost("{:api_url('question/item/delete')}", {
-                                item_id: item.item_id
+                        this.$confirm("是否确认删除 " + item.title + ' ?').then(() => {
+                            this.httpPost("{:api_url('question/examination/delete')}", {
+                                examination_id: item.examination_id
                             }, function (res) {
                                 if (res.status) {
                                     _this.$message.success('删除成功')
@@ -130,28 +113,19 @@
                         }).catch(err => {
                         })
                     },
-                    editItemEvent: function (item){
-                        var that = this;
-                        var url = "{:api_url('/question/item/addQuestion')}?item_id=" + item;
-                        layer.open({
-                            type: 2,
-                            title: '编辑题目',
-                            shadeClose: true,
-                            area: ['60%', '60%'],
-                            content: url,
-                            end: function(){
-                                that.getList()
-                            }
-                        });
+                    submitPage: function (item) {
+                        location.href = "{:api_url('question/examination/answer_records',['examination_id'=>''])}" + item.examination_id
                     },
-                    // editItemEvent: function (item) {
-                    //     this.show = true
-                    //     this.edit_item = item
-                    // },
+                    analysisEvent: function (item) {
+                        location.href = "{:api_url('question/examination/analysis',['examination_id'=>''])}" + item.examination_id
+                    },
+                    editEvent: function (item) {
+                        location.href = "{:api_url('question/examination/edit',['examination_id'=>''])}" + item.examination_id
+                    },
                     getList: function () {
                         var _this = this;
                         $.ajax({
-                            url: "{:api_url('question/item/index')}",
+                            url: "{:api_url('question/examination/index')}",
                             data: Object.assign({
                                 page: this.currentPage,
                             }, this.search_where),

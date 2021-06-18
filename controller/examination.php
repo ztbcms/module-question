@@ -1,42 +1,39 @@
 <?php
 /**
  * Created by PhpStorm.
- * User: zhlhuang
- * Date: 2021/2/25
- * Time: 09:35.
+ * User: xyh
+ * Date: 2021/6/16
  */
 
 namespace app\question\controller;
 
-
 use app\common\controller\AdminController;
-use app\question\model\QuestionItemModel;
-use app\question\model\QuestionQuestionnaireAnswerItemModel;
-use app\question\model\QuestionQuestionnaireAnswerModel;
-use app\question\model\QuestionQuestionnaireItemModel;
-use app\question\model\QuestionQuestionnaireModel;
 use think\facade\View;
+use app\question\model\QuestionExaminationModel;
+use app\question\model\ExaminationItemModel;
+use app\question\model\QuestionExaminationAnswerModel;
+use app\question\model\QuestionExaminationItemModel;
+use app\question\model\QuestionExaminationAnswerItemModel;
+use app\question\model\QuestionItemModel;
 
-class Questionnaire extends AdminController
+
+class examination extends AdminController
 {
     /**
-     * 问卷列表
      * @return string|\think\response\Json
-     * @throws \think\db\exception\DbException
      */
-    function index()
-    {
+    function index(){
         if (request()->isAjax()) {
             $where = [];
             $keyword = request()->param('keyword', '');
             if ($keyword != '') {
                 $where[] = ['title', 'like', "%{$keyword}%"];
             }
-            $data = QuestionQuestionnaireModel::where($where)
+            $lists = QuestionExaminationModel::where($where)
                 ->append(['item_count', 'submit_count'])
-                ->order('questionnaire_id', 'DESC')
+                ->order('examination_id', 'DESC')
                 ->paginate(20);
-            return self::makeJsonReturn(true, $data, 'ok');
+            return self::makeJsonReturn(true, $lists, 'ok');
         }
         return View::fetch('index');
     }
@@ -49,18 +46,22 @@ class Questionnaire extends AdminController
     {
 
         if (request()->isPost()) {
-            $questionnaire_id = request()->post('questionnaire_id', 0);
+            $examination_id = request()->post('examination_id', 0);
             $title = request()->post('title');
             $description = request()->post('description');
+            $number = request()->post('number');
+            $part_number = request()->post('part_number');
             $item_ids = request()->post('item_ids', []);
-            $questionnaire = QuestionQuestionnaireModel::where('questionnaire_id', $questionnaire_id)
+            $examination = QuestionExaminationModel::where('examination_id', $examination_id)
                 ->findOrEmpty();
-            $questionnaire->title = $title;
-            $questionnaire->description = $description;
-            $res = $questionnaire->transaction(function () use ($questionnaire, $item_ids)
+            $examination->title = $title;
+            $examination->description = $description;
+            $examination->number = $number;
+            $examination->part_number = $part_number;
+            $res = $examination->transaction(function () use ($examination, $item_ids)
             {
-                $res = $questionnaire->save();
-                return $res && QuestionQuestionnaireModel::saveQuestionnaireItems($questionnaire, $item_ids);
+                $res = $examination->save();
+                return $res && QuestionExaminationModel::saveExaminationItems($examination, $item_ids);
             });
             if ($res) {
                 return self::makeJsonReturn(true, [], 'ok');
@@ -68,17 +69,17 @@ class Questionnaire extends AdminController
                 return self::makeJsonReturn(true, [], '操作失败');
             }
         } elseif (request()->isAjax()) {
-            $questionQuestionnaire = QuestionQuestionnaireModel::where('questionnaire_id',
-                request()->get('questionnaire_id'))
+            $questionExamination = QuestionExaminationModel::where('examination_id',
+                request()->get('examination_id'))
                 ->with('item_list')
                 ->findOrEmpty();
-            return self::makeJsonReturn(true, ['detail' => $questionQuestionnaire], 'ok');
+            return self::makeJsonReturn(true, ['detail' => $questionExamination], 'ok');
         }
         return View::fetch('edit');
     }
 
     /**
-     * 获取问卷题目类型
+     * 获取答题题目类型
      * @return \think\response\Json
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
@@ -89,7 +90,7 @@ class Questionnaire extends AdminController
         $query = request()->param('query');
         //删除了 #
         $query = str_replace('#', '', $query);
-        $items = QuestionItemModel::where('item_kind', QuestionItemModel::ITEM_KIND_QUESTIONNAIRE)
+        $items = ExaminationItemModel::where('item_kind', ExaminationItemModel::ITEM_KIND_EXAMINATION)
             ->where(function ($q) use ($query)
             {
                 $q->where('item_id', 'like', "%{$query}%")
@@ -108,18 +109,18 @@ class Questionnaire extends AdminController
     }
 
     /**
-     * 问卷删除
+     * 答题删除
      * @return \think\response\Json
      */
     function delete()
     {
-        $questionnaire_id = request()->post('questionnaire_id');
-        $questionnaire = QuestionQuestionnaireModel::where('questionnaire_id', $questionnaire_id)
+        $examination_id = request()->post('examination_id');
+        $examination = QuestionExaminationModel::where('examination_id', $examination_id)
             ->findOrEmpty();
-        if ($questionnaire->isEmpty()) {
+        if ($examination->isEmpty()) {
             return self::makeJsonReturn(false, [], '未找到该记录');
         }
-        if ($questionnaire->delete()) {
+        if ($examination->delete()) {
             return self::makeJsonReturn(true, [], '删除成功');
         } else {
             return self::makeJsonReturn(false, [], '操作失败');
@@ -127,26 +128,36 @@ class Questionnaire extends AdminController
     }
 
     /**
-     * 问卷提交记录
+     * 答题提交记录
      * @return string|\think\response\Json
      * @throws \think\db\exception\DbException
      */
     function answer_records()
     {
-        $questionnaire_id = request()->param('questionnaire_id', 0);
-        $questionnaire = QuestionQuestionnaireModel::where('questionnaire_id', $questionnaire_id)->findOrEmpty();
+        $examination_id = request()->param('examination_id', 0);
+        $examination = QuestionExaminationModel::where('examination_id', $examination_id)->findOrEmpty();
         if (request()->isAjax()) {
-            $data = QuestionQuestionnaireAnswerModel::where('questionnaire_id', $questionnaire_id)
-                ->where('status', QuestionQuestionnaireAnswerModel::STATUS_CONFIRM)
+            $where = [];
+            $search_where = request()->param('keyword', '');
+            if ($search_where != '') {
+                $where[] = ['target', 'like', "%{$search_where}%"];
+            }
+            $data = QuestionExaminationAnswerModel::where('examination_id', $examination_id)
+                ->where($where)
+                ->append(['item_count','answer_correct'])
+                ->where('status', QuestionExaminationAnswerModel::STATUS_CONFIRM)
                 ->order('create_time', 'DESC')
                 ->paginate(20);
-            return self::makeJsonReturn(true, ['lists' => $data, 'questionnaire' => $questionnaire], 'ok');
+            foreach ($data as $datum) {
+                $datum['proportion'] = $datum['answer_correct'] . '/' . $datum['item_count'];
+            }
+            return self::makeJsonReturn(true, ['lists' => $data, 'examination' => $examination], 'ok');
         }
         return View::fetch('answer_records');
     }
 
     /**
-     * 具体问卷的回答情况
+     * 具体答题的回答情况
      * @return string|\think\response\Json
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
@@ -154,22 +165,21 @@ class Questionnaire extends AdminController
      */
     function answer_records_detail()
     {
-        $questionnaire_answer_id = request()->param('questionnaire_answer_id', 0);
+        $examination_answer_id = request()->param('examination_answer_id', 0);
         if (request()->isAjax()) {
-            $questionnaire_answer = QuestionQuestionnaireAnswerModel::where('questionnaire_answer_id',
-                $questionnaire_answer_id)->with('bindQuestionnaireTitle')->findOrEmpty();
+            $examination_answer = QuestionExaminationAnswerModel::where('examination_answer_id',
+                $examination_answer_id)->with('bindExaminationTitle')->findOrEmpty();
 
-
-            $questionnaire_id = $questionnaire_answer->questionnaire_id;
-            $questionnaire_items = QuestionQuestionnaireItemModel::where('questionnaire_id', $questionnaire_id)
+            $examination_id = $examination_answer->examination_id;
+            $examination_items = QuestionExaminationItemModel::where('examination_id', $examination_id)
                 ->append(['option_values', 'option_values_analysis'])
                 ->with(['bind_item'])
-                ->withAttr('option_values_analysis', function ($value, $data) use ($questionnaire_id)
+                ->withAttr('option_values_analysis', function ($value, $data) use ($examination_id)
                 {
-                    $option_values_analysis = QuestionQuestionnaireAnswerItemModel::where('questionnaire_id',
-                        $questionnaire_id)
+                    $option_values_analysis = QuestionExaminationAnswerItemModel::where('examination_id',
+                        $examination_id)
                         ->where('item_id',
-                            $data['item_id'])->field('count("questionnaire_answer_item_id") as count,option_value')
+                            $data['item_id'])->field('count("examination_answer_item_id") as count,option_value')
                         ->group('option_value')->select();
                     $total = 0;
                     foreach ($option_values_analysis as $analysis) {
@@ -180,23 +190,22 @@ class Questionnaire extends AdminController
                         'total' => $total
                     ];
                 })
-                ->withAttr('option_values', function ($value, $data) use ($questionnaire_answer_id)
+                ->withAttr('option_values', function ($value, $data) use ($examination_answer_id)
                 {
-                    $option_values = QuestionQuestionnaireAnswerItemModel::where('questionnaire_answer_id',
-                        $questionnaire_answer_id)->where('item_id', $data['item_id'])->column('option_value');
+                    $option_values = QuestionExaminationAnswerItemModel::where('examination_answer_id',
+                        $examination_answer_id)->where('item_id', $data['item_id'])->column('option_value');
                     return implode(',', $option_values);
                 })
                 ->order('number', 'ASC')
                 ->select();
             return self::makeJsonReturn(true,
-                ['questionnaire_answer' => $questionnaire_answer, 'questionnaire_items' => $questionnaire_items],
+                ['examination_answer' => $examination_answer, 'examination_items' => $examination_items],
                 'ok');
         }
         return View::fetch('answer_records_detail');
     }
-
     /**
-     * 问卷分析
+     * 答题分析
      * @return string|\think\response\Json
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
@@ -205,21 +214,21 @@ class Questionnaire extends AdminController
     function analysis()
     {
         if (request()->isAjax()) {
-            $questionnaire_id = request()->param('questionnaire_id', 0);
-            $questionnaire = QuestionQuestionnaireModel::where('questionnaire_id', $questionnaire_id)->findOrEmpty();
-            $questionnaire_items = QuestionQuestionnaireItemModel::where('questionnaire_id', $questionnaire_id)
+            $examination_id = request()->param('examination_id', 0);
+            $examination = QuestionExaminationModel::where('examination_id', $examination_id)->findOrEmpty();
+            $examination_items = QuestionExaminationItemModel::where('examination_id', $examination_id)
                 ->append(['option_values_analysis'])
                 ->with(['bind_item'])
-                ->withAttr('option_values_analysis', function ($value, $data) use ($questionnaire_id)
+                ->withAttr('option_values_analysis', function ($value, $data) use ($examination_id)
                 {
                     $item_type = $data['item_type'] ?? 0;
                     if ($item_type == QuestionItemModel::ITEM_TYPE_FILL) {
                         //如果是填空题。默认选出三个最高纪录
-                        $option_values_analysis = QuestionQuestionnaireAnswerItemModel::scope('analysis',
-                            $questionnaire_id, $data['item_id'])
+                        $option_values_analysis = QuestionExaminationAnswerItemModel::scope('analysis',
+                            $examination_id, $data['item_id'])
                             ->limit(0, 4)->select();
-                        $total = QuestionQuestionnaireAnswerItemModel::where('questionnaire_id',
-                            $questionnaire_id)
+                        $total = QuestionexaminationAnswerItemModel::where('examination_id',
+                            $examination_id)
                             ->where('item_id',
                                 $data['item_id'])->count();
                         return [
@@ -228,8 +237,8 @@ class Questionnaire extends AdminController
                             'item_type' => $data['item_type'] ?? 0
                         ];
                     } else {
-                        $option_values_analysis = QuestionQuestionnaireAnswerItemModel::scope('analysis',
-                            $questionnaire_id, $data['item_id'])->select();
+                        $option_values_analysis = QuestionExaminationAnswerItemModel::scope('analysis',
+                            $examination_id, $data['item_id'])->select();
                         $total = 0;
                         foreach ($option_values_analysis as $analysis) {
                             $total += $analysis["count"];
@@ -245,11 +254,12 @@ class Questionnaire extends AdminController
                 ->select();
             return self::makeJsonReturn(true,
                 [
-                    'questionnaire_items' => $questionnaire_items,
-                    'questionnaire'       => $questionnaire
+                    'examination_items' => $examination_items,
+                    'examination'       => $examination
                 ],
                 'ok');
         }
         return View::fetch('analysis');
     }
+
 }
