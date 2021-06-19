@@ -16,6 +16,12 @@ class QuestionExaminationAnswerItemModel extends Model
     protected $name = 'question_examination_answer_item';
     protected $pk = 'examination_answer_item_id';
 
+    /**
+     * 用户提交的选项答案
+     * @param $query
+     * @param $examination_id
+     * @param $item_id
+     */
     function scopeAnalysis($query, $examination_id, $item_id)
     {
         $query->where('examination_id',

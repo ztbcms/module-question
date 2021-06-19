@@ -12,7 +12,7 @@
                             <el-radio :label="1">全部</el-radio>
                             <el-radio :label="2">
                                 部分
-                                <el-input style="width: 150px" v-model="form.part_number" placeholder="请输入需要回答数量"></el-input>
+                                <el-input style="width: 150px" v-model="form.part_number" placeholder="请输入需要回答数量" v-bind:disabled="disableInput"></el-input>
                             </el-radio>
                         </el-radio-group>
                     </el-form-item>
@@ -106,7 +106,8 @@
                     loading: false,
                     items: [],
                     select_item: "",
-                    select_item_list: []
+                    select_item_list: [],
+                    disableInput: false
                 },
                 methods: {
                     backEvent: function () {
@@ -120,8 +121,12 @@
                                 var item = [this.items[i].item_id,i+1]
                                 this.itemChangeEvent(item)
                             }
+                            this.disableInput=true;
+                        }else{
+                            this.disableInput=false;
                         }
                     },
+                    //获取试卷信息
                     getEditInfo: function () {
                         var _this = this
                         this.httpGet('{:api_url("question/examination/edit")}', {
@@ -136,6 +141,12 @@
                                     number: detail.number,
                                     part_number: detail.part_number,
                                 }
+                                //判断当前的题目数 更改输入框的禁用状态
+                                if(_this.form.number === 1){
+                                    _this.disableInput=true;
+                                }else{
+                                    _this.disableInput=false;
+                                }
                                 _this.select_item_list = detail.item_list
                             }
                         })
@@ -146,12 +157,28 @@
                             this.$message.error('请选择答题题目');
                             return
                         }
+                        if(postData.title === undefined || postData.title === ''){
+                            this.$message.error('请填写答题标题');
+                            return
+                        }
+                        if(postData.description === undefined || postData.description === ''){
+                            this.$message.error('请填写答题简介');
+                            return
+                        }
+                        //当题目数量有值时，添加的题目数量必须对应
+                        if(postData.part_number !== undefined){
+                            if(this.select_item_list.length != postData.part_number){
+                                this.$message.error("您输入了答题数量，请添加对应数量的答题题目")
+                                return
+                            }
+                        }
+
                         var item_ids = []
                         this.select_item_list.forEach(item => {
                             item_ids.push(item.item_id)
                         })
                         postData['item_ids'] = item_ids
-                        console.log('postData', postData)
+                        // console.log('postData', postData)
                         var _this = this
                         this.httpPost('{:api_url("question/examination/edit")}', postData, function (res) {
                             if (res.status) {
@@ -164,16 +191,17 @@
                             }
                         })
                     },
+                    //删除一个选项
                     deleteItemEvent: function (index) {
-                        if(this.form.number == 1){
+                        if(this.form.number === 1){
                             this.$message.error('请题目数量为全部，不可删除')
                             return
                         }else{
                             this.select_item_list.splice(index, 1)
                         }
                     },
+                    //删除一个题目
                     removeItemOption: function (item_id) {
-                        console.log('removeItemOption', item_id)
                         var index = this.select_item_list.findIndex(item => {
                             return parseInt(item.item_id) === parseInt(item_id)
                         })
@@ -181,9 +209,8 @@
                             this.deleteItemEvent(index)
                         }
                     },
+                    //添加答题题目
                     itemChangeEvent: function (item_ids) {
-                        console.log(item_ids)
-                        console.log('itemChangeEvent', item_ids)
                         var _this = this
                         item_ids.forEach(item_id => {
                             var item = _this.items.find(item => {
@@ -199,6 +226,7 @@
                             }
                         })
                     },
+                    //获取答题题目类型
                     getItemList: function (query) {
                         console.log('getItemList', query)
                         var _this = this
@@ -211,14 +239,12 @@
                             }
                         })
                     },
+                    //渲染题目表格
                     initSortable() {
                         const tbody = document.querySelector('.el-table__body-wrapper tbody')
                         const _this = this
                         Sortable.create(tbody, {
                             onEnd({newIndex, oldIndex}) {
-                                console.log({newIndex, oldIndex})
-                                // const currRow = _this.select_item_list.splice(oldIndex, 1)[0]
-                                // _this.select_item_list.splice(newIndex, 0, currRow)
 
                                 const currRow = _this.select_item_list.splice(oldIndex, 1)[0]
                                 var new_select_item_list = []

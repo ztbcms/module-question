@@ -2,12 +2,12 @@
     <div id="app" style="padding: 8px;" v-cloak>
         <div>
             <el-card>
-                <h3>试卷列表</h3>
+                <h3>答题列表</h3>
                 <div style="display: flex;justify-content: space-between">
                     <div>
                         <el-form :inline="true" :model="search_where" class="demo-form-inline">
                             <el-form-item>
-                                <el-input v-model="search_where.keyword" placeholder="请输入试卷标题"></el-input>
+                                <el-input v-model="search_where.keyword" placeholder="请输入答题试卷标题"></el-input>
                             </el-form-item>
                             <el-form-item>
                                 <el-button type="primary" @click="searchSubmit">查询</el-button>
@@ -16,7 +16,7 @@
                     </div>
                     <div>
                         <el-link href="{:url('question/examination/edit')}">
-                            <el-button type="primary">添加试卷</el-button>
+                            <el-button type="primary">添加答题试卷</el-button>
                         </el-link>
                     </div>
                 </div>
@@ -93,10 +93,12 @@
                     search_where: {}
                 },
                 methods: {
+                    //查询
                     searchSubmit: function () {
                         this.currentPage = 1
                         this.getList()
                     },
+                    //删除一列
                     deleteEvent: function (item) {
                         var _this = this
                         this.$confirm("是否确认删除 " + item.title + ' ?').then(() => {
@@ -113,12 +115,15 @@
                         }).catch(err => {
                         })
                     },
+                    //用户提交的试卷列表页面
                     submitPage: function (item) {
                         location.href = "{:api_url('question/examination/answer_records',['examination_id'=>''])}" + item.examination_id
                     },
+                    //试卷分析页
                     analysisEvent: function (item) {
                         location.href = "{:api_url('question/examination/analysis',['examination_id'=>''])}" + item.examination_id
                     },
+                    //编辑试卷页
                     editEvent: function (item) {
                         location.href = "{:api_url('question/examination/edit',['examination_id'=>''])}" + item.examination_id
                     },

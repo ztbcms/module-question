@@ -24,8 +24,7 @@ class QuestionExaminationModel extends Model
         $examination_id = $examination->examination_id;
         //删除已有的选项
         if ($examination_id) {
-            QuestionExaminationItemModel::destroy(function ($query) use ($examination_id)
-            {
+            QuestionExaminationItemModel::destroy(function ($query) use ($examination_id) {
                 $query->where('examination_id', $examination_id);
             });
         }
@@ -34,27 +33,44 @@ class QuestionExaminationModel extends Model
         foreach ($item_ids as $number => $item_id) {
             $saveData[] = [
                 'examination_id' => $examination_id,
-                'item_id'          => $item_id ?? 0,
-                'number'           => $number + 1
+                'item_id'        => $item_id ?? 0,
+                'number'         => $number + 1
             ];
         }
         $examination_item = new QuestionExaminationItemModel();
         return $examination_item->saveAll($saveData);
     }
+
+    /**
+     * 试卷下的选项列表
+     * @return \think\model\relation\HasMany
+     */
     function itemList()
     {
         return $this->hasMany(QuestionExaminationItemModel::class, 'examination_id', 'examination_id')
             ->order('number', 'ASC')
-            ->with('bind_item')->hidden(['examination_id', 'id']);
+            ->with('bind_item')
+            ->hidden(['examination_id', 'id']);
     }
 
-
+    /**
+     * 试卷下的题目数
+     * @param $value
+     * @param $data
+     * @return int
+     */
     function getItemCountAttr($value, $data)
     {
         return QuestionExaminationItemModel::where('examination_id', $data['examination_id'])
             ->count();
     }
 
+    /**
+     * 试卷的提交数
+     * @param $value
+     * @param $data
+     * @return int
+     */
     function getSubmitCountAttr($value, $data)
     {
         return QuestionExaminationAnswerModel::where('examination_id', $data['examination_id'])

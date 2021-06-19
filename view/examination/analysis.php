@@ -117,6 +117,7 @@
                             }
                         })
                     },
+                    //渲染百分比图形
                     makeChart: function (index, list, total) {
                         var map = {}
                         var data = [];

@@ -96,7 +96,11 @@ class Item extends AdminController
         }
     }
 
-    //新增/编辑
+
+    /**
+     * 新增/编辑选项
+     * @return \think\response\Json|\think\response\View
+     */
     function addQuestion(){
         $_action = input('_action');
         //获取题目详情

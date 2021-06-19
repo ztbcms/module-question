@@ -4,7 +4,7 @@
             <el-card>
                 <div>
                     <el-breadcrumb separator="/">
-                        <el-breadcrumb-item><a href="{:api_url('/question/examination/index')}">试卷列表</a></el-breadcrumb-item>
+                        <el-breadcrumb-item><a href="{:api_url('/question/examination/index')}">答题列表</a></el-breadcrumb-item>
                         <el-breadcrumb-item>{{examination.title}}</el-breadcrumb-item>
                     </el-breadcrumb>
                 </div>
@@ -92,6 +92,7 @@
                     proportion: ''
                 },
                 methods: {
+                    //打开详情页面
                     detailEvent: function (item) {
                         location.href = "{:api_url('question/examination/answer_records_detail',['examination_answer_id'=>''])}" + item.examination_answer_id
                     },
