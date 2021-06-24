@@ -144,9 +144,11 @@
                             }
                         })
                     },
+                    //删除问卷的一个题目
                     deleteItemEvent: function (index) {
                         this.select_item_list.splice(index, 1)
                     },
+                    //多选模式下移除tag时触发
                     removeItemOption: function (item_id) {
                         console.log('removeItemOption', item_id)
                         var index = this.select_item_list.findIndex(item => {
@@ -156,6 +158,7 @@
                             this.deleteItemEvent(index)
                         }
                     },
+                    //为问卷增加一个题目
                     itemChangeEvent: function (item_ids) {
                         console.log('itemChangeEvent', item_ids)
                         var _this = this
@@ -173,6 +176,7 @@
                             }
                         })
                     },
+                    //获取问卷题目列表
                     getItemList: function (query) {
                         console.log('getItemList', query)
                         var _this = this
@@ -185,6 +189,7 @@
                             }
                         })
                     },
+                    //渲染问卷题目表格
                     initSortable() {
                         const tbody = document.querySelector('.el-table__body-wrapper tbody')
                         const _this = this

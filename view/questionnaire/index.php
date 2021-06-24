@@ -97,6 +97,7 @@
                         this.currentPage = 1
                         this.getList()
                     },
+                    //删除这张问答
                     deleteEvent: function (item) {
                         var _this = this
                         this.$confirm("是否确认删除 " + item.title + ' ?').then(() => {
@@ -113,12 +114,15 @@
                         }).catch(err => {
                         })
                     },
+                    //跳转到问答 的用户提交列表页
                     submitPage: function (item) {
                         location.href = "{:api_url('question/questionnaire/answer_records',['questionnaire_id'=>''])}" + item.questionnaire_id
                     },
+                    //跳转分析页  分析这张问答的题目
                     analysisEvent: function (item) {
                         location.href = "{:api_url('question/questionnaire/analysis',['questionnaire_id'=>''])}" + item.questionnaire_id
                     },
+                    //跳转编辑页
                     editEvent: function (item) {
                         location.href = "{:api_url('question/questionnaire/edit',['questionnaire_id'=>''])}" + item.questionnaire_id
                     },

@@ -265,6 +265,7 @@
                         }
                     })
                 },
+                //删除题目选项
                 deleteOptionEvent: function (index) {
                     console.log('index', index)
                     var that = this
@@ -302,8 +303,6 @@
                         this.$message.error('请输入选项值')
                         return
                     }
-                    // console.log(that.form.item_type)
-                    // return
                     if(that.form.item_type === '0'){
                         // 单选
                         this.radio_data.push({
@@ -375,9 +374,7 @@
                     }
                     this.httpGet(url, data, function (res) {
                         console.log(res)
-                        // vm.options[optionIndex].checked = true;
                         that.form = res.data.form;
-                        // that.form.item_kind = res.data.form.item_kind + ''
                         that.pack = res.data.pack;
                         that.radio_data = res.data.radio_data;
                         that.checkbox_data = res.data.checkbox_data;

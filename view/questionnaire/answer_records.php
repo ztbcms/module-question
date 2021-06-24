@@ -73,6 +73,7 @@
                     questionnaire: {}
                 },
                 methods: {
+                    //跳转详情页
                     detailEvent: function (item) {
                         location.href = "{:api_url('question/questionnaire/answer_records_detail',['questionnaire_answer_id'=>''])}" + item.questionnaire_answer_id
                     },

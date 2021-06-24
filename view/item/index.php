@@ -114,6 +114,7 @@
                         this.currentPage = 1
                         this.getList()
                     },
+                    //删除题目
                     deleteItemEvent: function (item) {
                         var _this = this
                         this.$confirm("是否确认删除 " + item.content + ' ?').then(() => {
@@ -130,6 +131,7 @@
                         }).catch(err => {
                         })
                     },
+                    //编辑题目
                     editItemEvent: function (item){
                         var that = this;
                         var url = "{:api_url('/question/item/addQuestion')}?item_id=" + item;
