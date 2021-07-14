@@ -16,12 +16,13 @@ use app\question\model\QuestionExaminationAnswerModel;
 use app\question\model\QuestionExaminationItemModel;
 use app\question\model\QuestionExaminationAnswerItemModel;
 use app\question\model\QuestionItemModel;
+use think\response\Json;
 
 
 class examination extends AdminController
 {
     /**
-     * @return string|\think\response\Json
+     * @return string|Json
      */
     function index()
     {
@@ -42,7 +43,7 @@ class examination extends AdminController
 
     /**
      * 问卷新增和编辑
-     * @return string|\think\response\Json
+     * @return string|Json
      */
     function edit()
     {
@@ -52,15 +53,16 @@ class examination extends AdminController
             $title = request()->post('title');
             $description = request()->post('description');
             $number = request()->post('number');
-            $part_number = request()->post('part_number');
+            $type = request()->post('type', 0);
             $item_ids = request()->post('item_ids', []);
             $examination = QuestionExaminationModel::where('examination_id', $examination_id)
                 ->findOrEmpty();
             $examination->title = $title;
             $examination->description = $description;
             $examination->number = $number;
-            $examination->part_number = $part_number;
-            $res = $examination->transaction(function () use ($examination, $item_ids) {
+            $examination->type = $type;
+            $res = $examination->transaction(function () use ($examination, $item_ids)
+            {
                 $res = $examination->save();
                 return $res && QuestionExaminationModel::saveExaminationItems($examination, $item_ids);
             });
@@ -81,24 +83,26 @@ class examination extends AdminController
 
     /**
      * 获取答题题目类型
-     * @return \think\response\Json
+     * @return Json
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\db\exception\DataNotFoundException
      */
-    function getItemList()
+    function getItemList(): Json
     {
         $query = request()->param('query');
         //删除了 #
         $query = str_replace('#', '', $query);
         $items = ExaminationItemModel::where('item_kind', ExaminationItemModel::ITEM_KIND_EXAMINATION)
-            ->where(function ($q) use ($query) {
+            ->where(function ($q) use ($query)
+            {
                 $q->where('item_id', 'like', "%{$query}%")
                     ->whereOr('content', 'like', "%{$query}%");
             })
             ->field(['item_id', 'content', 'item_type'])
             ->append(['item_type_text'])
-            ->withAttr('content', function ($value, $data) {
+            ->withAttr('content', function ($value, $data)
+            {
                 return '#'.$data['item_id'].' '.$value;
             })
             ->order('item_id', 'ASC')
@@ -109,9 +113,9 @@ class examination extends AdminController
 
     /**
      * 答题删除
-     * @return \think\response\Json
+     * @return Json
      */
-    function delete()
+    function delete(): Json
     {
         $examination_id = request()->post('examination_id');
         $examination = QuestionExaminationModel::where('examination_id', $examination_id)
@@ -128,7 +132,7 @@ class examination extends AdminController
 
     /**
      * 答题提交记录
-     * @return string|\think\response\Json
+     * @return string|Json
      * @throws \think\db\exception\DbException
      */
     function answer_records()
@@ -143,13 +147,10 @@ class examination extends AdminController
             }
             $data = QuestionExaminationAnswerModel::where('examination_id', $examination_id)
                 ->where($where)
-                ->append(['item_count', 'answer_correct'])
+                ->append(['proportion'])
                 ->where('status', QuestionExaminationAnswerModel::STATUS_CONFIRM)
                 ->order('create_time', 'DESC')
                 ->paginate(20);
-            foreach ($data as $datum) {
-                $datum['proportion'] = $datum['answer_correct'].'/'.$datum['item_count'];
-            }
             return self::makeJsonReturn(true, ['lists' => $data, 'examination' => $examination], 'ok');
         }
         return View::fetch('answer_records');
@@ -157,7 +158,7 @@ class examination extends AdminController
 
     /**
      * 具体答题的回答情况
-     * @return string|\think\response\Json
+     * @return string|Json
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\db\exception\DataNotFoundException
@@ -173,7 +174,8 @@ class examination extends AdminController
             $examination_items = QuestionExaminationItemModel::where('examination_id', $examination_id)
                 ->append(['option_values', 'option_values_analysis', 'right_key'])
                 ->with(['bind_item'])
-                ->withAttr('option_values_analysis', function ($value, $data) use ($examination_id) {
+                ->withAttr('option_values_analysis', function ($value, $data) use ($examination_id)
+                {
                     $option_values_analysis = QuestionExaminationAnswerItemModel::where('examination_id',
                         $examination_id)
                         ->where('item_id',
@@ -188,16 +190,11 @@ class examination extends AdminController
                         'total' => $total
                     ];
                 })
-                ->withAttr('option_values', function ($value, $data) use ($examination_answer_id) {
+                ->withAttr('option_values', function ($value, $data) use ($examination_answer_id)
+                {
                     $option_values = QuestionExaminationAnswerItemModel::where('examination_answer_id',
                         $examination_answer_id)->where('item_id', $data['item_id'])->column('option_value');
                     return implode(',', $option_values);
-                })
-                //正确答案
-                ->withAttr('right_key', function ($value, $data) {
-                    return QuestionItemOptionModel::where('item_id', $data['item_id'])
-                        ->field('option_value as option_right_key')
-                        ->select();
                 })
                 ->order('number', 'ASC')
                 ->select();
@@ -210,7 +207,7 @@ class examination extends AdminController
 
     /**
      * 答题分析
-     * @return string|\think\response\Json
+     * @return string|Json
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\db\exception\DataNotFoundException
@@ -221,76 +218,8 @@ class examination extends AdminController
             $examination_id = request()->param('examination_id', 0);
             $examination = QuestionExaminationModel::where('examination_id', $examination_id)->findOrEmpty();
             $examination_items = QuestionExaminationItemModel::where('examination_id', $examination_id)
-                ->append(['option_values_analysis', 'right_key', 'answer', 'accuracy'])
+                ->append(['option_values_analysis', 'right_key', 'answer_count', 'accuracy'])
                 ->with(['bind_item'])
-                ->withAttr('option_values_analysis', function ($value, $data) use ($examination_id) {
-                    $item_type = $data['item_type'] ?? 0;
-                    if ($item_type == QuestionItemModel::ITEM_TYPE_FILL) {
-                        //如果是填空题。默认选出三个最高纪录
-                        $option_values_analysis = QuestionExaminationAnswerItemModel::scope('analysis',
-                            $examination_id, $data['item_id'])
-                            ->limit(0, 4)->select();
-                        $total = QuestionexaminationAnswerItemModel::where('examination_id',
-                            $examination_id)
-                            ->where('item_id', $data['item_id'])
-                            ->count();
-                        return [
-                            'list'      => $option_values_analysis,
-                            'total'     => $total,
-                            'item_type' => $data['item_type'] ?? 0
-                        ];
-                    } else {
-                        $option_values_analysis = QuestionExaminationAnswerItemModel::scope('analysis',
-                            $examination_id, $data['item_id'])->select();
-                        $total = 0;
-                        $answer = '';
-                        foreach ($option_values_analysis as $analysis) {
-                            $total += $analysis["count"];
-                            $answer .= $analysis['option_value'].'/';
-                        }
-                        return [
-                            'list'      => $option_values_analysis,
-                            'total'     => $total,
-                            'item_type' => $data['item_type'] ?? 0
-                        ];
-                    }
-                })
-                //正确答案
-                ->withAttr('right_key', function ($value, $data) {
-                    return QuestionItemOptionModel::where('item_id', $data['item_id'])
-                        ->field('option_value as option_right_key')
-                        ->find();
-                })
-                //用户回答的答案
-                ->withAttr('answer', function ($value, $data) {
-                    $answer_data = QuestionExaminationAnswerItemModel::where('item_id', $data['item_id'])
-                        ->field('option_value as option_answer')
-                        ->select();
-                    $answer = '';
-                    foreach ($answer_data as $key => $val) {
-                        $answer .= $val['option_answer'].'/';
-                    }
-                    return rtrim($answer, "/");
-                })
-                //正确率
-                ->withAttr('accuracy', function ($value, $data) {
-                    $answer_data = QuestionExaminationAnswerItemModel::where('item_id', $data['item_id'])
-                        ->field('is_answer_correct')
-                        ->select();
-                    $answer_data2 = [];
-                    foreach ($answer_data as $answer_datum) {
-                        $answer_data2[] = $answer_datum['is_answer_correct'];
-                    }
-                    $str = implode(',', $answer_data2);
-                    $count = substr_count($str, '1');
-                    $answer_count = count($answer_data2);
-                    if ($count !== 0 && $answer_count !== 0) {
-                        $answer = ($answer_count / $count * 100).'%';
-                    } else {
-                        $answer = '0%';
-                    }
-                    return $answer;
-                })
                 ->order('number', 'ASC')
                 ->select();
             return self::makeJsonReturn(true,

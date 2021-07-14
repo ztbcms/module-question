@@ -25,13 +25,13 @@ CREATE TABLE `cms_question_examination`  (
   `examination_id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `title` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT '' COMMENT '问卷标题',
   `description` varchar(2048) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT '' COMMENT '问卷介绍',
-  `number` int(2) NULL DEFAULT NULL COMMENT '答题数量（1：全部，2部分）',
-  `part_number` int(11) NULL DEFAULT NULL COMMENT '部分数量',
+  `type` tinyint(1) DEFAULT '0' COMMENT '答题数量（0：顺序，1随机）',
+  `number` int(11) DEFAULT '0' COMMENT '答题数量',
   `create_time` int(11) NULL DEFAULT 0 COMMENT '创建时间',
   `update_time` int(11) NULL DEFAULT 0 COMMENT '更新时间',
   `delete_time` int(11) NULL DEFAULT 0 COMMENT '删除时间',
   PRIMARY KEY (`examination_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for cms_question_examination_answer
@@ -48,7 +48,7 @@ CREATE TABLE `cms_question_examination_answer`  (
   `update_time` int(11) NULL DEFAULT 0 COMMENT '更新时间',
   `delete_time` int(11) NULL DEFAULT 0 COMMENT '删除时间',
   PRIMARY KEY (`examination_answer_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 14 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '提交答案主表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '提交答案主表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for cms_question_examination_answer_item
@@ -68,7 +68,7 @@ CREATE TABLE `cms_question_examination_answer_item`  (
   `update_time` int(11) NULL DEFAULT 0 COMMENT '更新时间',
   `delete_time` int(11) NULL DEFAULT 0 COMMENT '删除时间',
   PRIMARY KEY (`examination_answer_item_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 59 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for cms_question_examination_item
@@ -80,7 +80,7 @@ CREATE TABLE `cms_question_examination_item`  (
   `item_id` int(11) NULL DEFAULT 0 COMMENT '关联题目id',
   `number` int(11) NULL DEFAULT 0 COMMENT '题号',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 57 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for cms_question_item
@@ -95,7 +95,7 @@ CREATE TABLE `cms_question_item`  (
   `update_time` int(11) NULL DEFAULT 0 COMMENT '更新时间',
   `delete_time` int(11) NULL DEFAULT 0 COMMENT '删除时间',
   PRIMARY KEY (`item_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 58 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for cms_question_item_option
@@ -113,7 +113,7 @@ CREATE TABLE `cms_question_item_option`  (
   `create_time` int(11) NULL DEFAULT 0 COMMENT '创建时间',
   `delete_time` int(11) NULL DEFAULT 0 COMMENT '删除时间',
   PRIMARY KEY (`item_option_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 50 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for cms_question_questionnaire
@@ -127,7 +127,7 @@ CREATE TABLE `cms_question_questionnaire`  (
   `update_time` int(11) NULL DEFAULT 0 COMMENT '更新时间',
   `delete_time` int(11) NULL DEFAULT 0 COMMENT '删除时间',
   PRIMARY KEY (`questionnaire_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for cms_question_questionnaire_answer
@@ -144,7 +144,7 @@ CREATE TABLE `cms_question_questionnaire_answer`  (
   `update_time` int(11) NULL DEFAULT 0 COMMENT '更新时间',
   `delete_time` int(11) NULL DEFAULT 0 COMMENT '删除时间',
   PRIMARY KEY (`questionnaire_answer_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for cms_question_questionnaire_answer_item
@@ -163,7 +163,7 @@ CREATE TABLE `cms_question_questionnaire_answer_item`  (
   `update_time` int(11) NULL DEFAULT 0 COMMENT '更新时间',
   `delete_time` int(11) NULL DEFAULT 0 COMMENT '删除时间',
   PRIMARY KEY (`questionnaire_answer_item_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 3 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for cms_question_questionnaire_item
@@ -175,6 +175,6 @@ CREATE TABLE `cms_question_questionnaire_item`  (
   `item_id` int(11) NULL DEFAULT 0 COMMENT '关联题目id',
   `number` int(11) NULL DEFAULT 0 COMMENT '题号',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 SET FOREIGN_KEY_CHECKS = 1;

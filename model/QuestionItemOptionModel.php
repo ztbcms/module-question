@@ -20,4 +20,7 @@ class QuestionItemOptionModel extends Model
     protected $name = 'question_item_option';
     protected $pk = 'item_option_id';
     protected $updateTime = false;
+
+    const OPTION_TRUE = 1;
+    const OPTION_FALSE = 0;
 }

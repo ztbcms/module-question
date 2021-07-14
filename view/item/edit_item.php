@@ -10,7 +10,7 @@
                         <el-form-item label="种类">
                             <el-radio-group v-model="form.item_kind">
                                 <el-radio label="0">问卷</el-radio>
-                                <el-radio label="1">答题</el-radio>
+                                <el-radio label="1">试题</el-radio>
                             </el-radio-group>
                         </el-form-item>
                         <el-form-item label="类型">

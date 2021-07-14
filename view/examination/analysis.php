@@ -2,14 +2,11 @@
     <div id="app" style="padding: 8px;" v-cloak>
         <div>
             <el-card>
-                <div>
-                    <h3>答题分析</h3>
-                </div>
-                <div>
+                <div slot="header">
                     <el-breadcrumb separator="/">
-                        <el-breadcrumb-item><a href="{:api_url('/question/examination/index')}">问卷列表</a>
+                        <el-breadcrumb-item><a href="{:api_url('/question/examination/index')}">试卷列表</a>
                         </el-breadcrumb-item>
-                        <el-breadcrumb-item>{{examination.title}}</el-breadcrumb-item>
+                        <el-breadcrumb-item>答题分析： {{examination.title}}</el-breadcrumb-item>
                     </el-breadcrumb>
                 </div>
                 <div style="margin-top: 20px">
@@ -36,13 +33,12 @@
                         </el-table-column>
                         <el-table-column
                                 align="center"
-                                prop="answer"
-                                label="回答"
+                                prop="answer_count"
+                                label="正确/回答"
                                 min-width="200">
                         </el-table-column>
-
                         <el-table-column
-                                prop="right_key.option_right_key"
+                                prop="right_key"
                                 label="正确答案"
                                 min-width="200">
                         </el-table-column>
@@ -50,11 +46,6 @@
                                 prop="accuracy"
                                 label="正确率"
                                 min-width="100">
-<!--                            <template slot-scope="props">-->
-<!--                                <div>-->
-<!--                                    <canvas :id="'mountNode'+props.$index"></canvas>-->
-<!--                                </div>-->
-<!--                            </template>-->
                         </el-table-column>
                     </el-table>
                     <div style="text-align: center;margin-top: 20px">
@@ -75,9 +66,6 @@
     <!--    如果公共方法没有定义 window.__vueList 打开这个注释 -->
     {include file="/components/vue-list"}
     <script src="https://gw.alipayobjects.com/os/antv/assets/f2/3.4.2/f2.min.js"></script>
-    <!-- 在 PC 上模拟 touch 事件 -->
-    <script src="https://gw.alipayobjects.com/os/rmsportal/NjNldKHIVQRozfbAOJUW.js"></script>
-
     <script>
         $(document).ready(function () {
             new Vue({
@@ -111,7 +99,6 @@
                                 setTimeout(function () {
                                     for (var index in _this.lists) {
                                         var item = _this.lists[index]
-                                        // _this.makeChart(index, item.option_values_analysis.list, item.option_values_analysis.total)
                                     }
                                 }, 1000)
                             }

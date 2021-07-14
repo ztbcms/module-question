@@ -2,12 +2,16 @@
     <div id="app" style="padding: 8px;" v-cloak>
         <div>
             <el-card>
-                <h3>答题列表</h3>
+                <div slot="header" class="clearfix">
+                    <el-breadcrumb separator="/">
+                        <el-breadcrumb-item>试卷列表</el-breadcrumb-item>
+                    </el-breadcrumb>
+                </div>
                 <div style="display: flex;justify-content: space-between">
                     <div>
                         <el-form :inline="true" :model="search_where" class="demo-form-inline">
                             <el-form-item>
-                                <el-input v-model="search_where.keyword" placeholder="请输入答题试卷标题"></el-input>
+                                <el-input v-model="search_where.keyword" placeholder="请输入试卷标题"></el-input>
                             </el-form-item>
                             <el-form-item>
                                 <el-button type="primary" @click="searchSubmit">查询</el-button>
@@ -16,7 +20,7 @@
                     </div>
                     <div>
                         <el-link href="{:url('question/examination/edit')}">
-                            <el-button type="primary">添加答题试卷</el-button>
+                            <el-button type="primary">添加试卷</el-button>
                         </el-link>
                     </div>
                 </div>

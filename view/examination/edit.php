@@ -1,18 +1,24 @@
 <div>
     <div id="app" style="padding: 8px;" v-cloak>
         <el-card>
-            <h3>答题列表</h3>
+            <div slot="header" class="clearfix">
+                <el-breadcrumb separator="/">
+                    <el-breadcrumb-item><a href="{:url('question/examination/index')}">试卷列表</a></el-breadcrumb-item>
+                    <el-breadcrumb-item>{{examination_id>0?'编辑试卷':'新增试卷'}}</el-breadcrumb-item>
+                </el-breadcrumb>
+            </div>
             <div style="margin-top: 20px">
                 <el-form ref="form" :model="form" label-width="80px">
-                    <el-form-item label="答题标题">
+                    <el-form-item label="试卷标题">
                         <el-input style="width: 500px" v-model="form.title"></el-input>
                     </el-form-item>
-                    <el-form-item label="答题数量">
-                        <el-radio-group v-model="form.number" @change="selectNumber">
-                            <el-radio :label="1">全部</el-radio>
-                            <el-radio :label="2">
-                                部分
-                                <el-input style="width: 150px" v-model="form.part_number" placeholder="请输入需要回答数量" v-bind:disabled="disableInput"></el-input>
+                    <el-form-item label="答题方式">
+                        <el-radio-group v-model="form.type">
+                            <el-radio :label="0">顺序</el-radio>
+                            <el-radio :label="1">
+                                随机
+                                <el-input style="width: 200px" v-model="form.number" placeholder="请输入随机答题的数量"
+                                          v-bind:disabled="form.type==0"></el-input>
                             </el-radio>
                         </el-radio-group>
                     </el-form-item>
@@ -101,30 +107,16 @@
                     show_edit_time: false,
                     examination_id: "<?php echo $_GET['examination_id'] ?? 0;?>",
                     form: {
-                        number:2
+                        type: 0
                     },
                     loading: false,
                     items: [],
                     select_item: "",
                     select_item_list: [],
-                    disableInput: false
                 },
                 methods: {
                     backEvent: function () {
                         history.back()
-                    },
-                    //选择答题数量 /全部/部分
-                    selectNumber: function (value){
-                        //添加全部题目
-                        if(value == 1){
-                            for(var i=0;i<this.items.length;i++){
-                                var item = [this.items[i].item_id,i+1]
-                                this.itemChangeEvent(item)
-                            }
-                            this.disableInput=true;
-                        }else{
-                            this.disableInput=false;
-                        }
                     },
                     //获取试卷信息
                     getEditInfo: function () {
@@ -138,14 +130,8 @@
                                     examination_id: detail.examination_id,
                                     title: detail.title,
                                     description: detail.description,
-                                    number: detail.number,
-                                    part_number: detail.part_number,
-                                }
-                                //判断当前的题目数 更改输入框的禁用状态
-                                if(_this.form.number === 1){
-                                    _this.disableInput=true;
-                                }else{
-                                    _this.disableInput=false;
+                                    type: parseInt(detail.type),
+                                    number: parseInt(detail.number),
                                 }
                                 _this.select_item_list = detail.item_list
                             }
@@ -157,28 +143,19 @@
                             this.$message.error('请选择答题题目');
                             return
                         }
-                        if(postData.title === undefined || postData.title === ''){
+                        if (postData.title === undefined || postData.title === '') {
                             this.$message.error('请填写答题标题');
                             return
                         }
-                        if(postData.description === undefined || postData.description === ''){
+                        if (postData.description === undefined || postData.description === '') {
                             this.$message.error('请填写答题简介');
                             return
                         }
-                        //当题目数量有值时，添加的题目数量必须对应
-                        if(postData.part_number !== undefined){
-                            if(this.select_item_list.length != postData.part_number){
-                                this.$message.error("您输入了答题数量，请添加对应数量的答题题目")
-                                return
-                            }
-                        }
-
                         var item_ids = []
                         this.select_item_list.forEach(item => {
                             item_ids.push(item.item_id)
                         })
                         postData['item_ids'] = item_ids
-                        // console.log('postData', postData)
                         var _this = this
                         this.httpPost('{:api_url("question/examination/edit")}', postData, function (res) {
                             if (res.status) {
@@ -193,12 +170,7 @@
                     },
                     //删除一个选项
                     deleteItemEvent: function (index) {
-                        if(this.form.number === 1){
-                            this.$message.error('请题目数量为全部，不可删除')
-                            return
-                        }else{
-                            this.select_item_list.splice(index, 1)
-                        }
+                        this.select_item_list.splice(index, 1)
                     },
                     //删除一个题目
                     removeItemOption: function (item_id) {
@@ -260,7 +232,7 @@
                         })
                     },
                     //添加题目
-                    addItem:function(){
+                    addItem: function () {
                         var that = this;
                         var url = "{:api_url('/question/item/addQuestion')}";
                         layer.open({
@@ -269,7 +241,7 @@
                             shadeClose: true,
                             area: ['60%', '60%'],
                             content: url,
-                            end: function(){
+                            end: function () {
                                 that.getList()
                             }
                         });

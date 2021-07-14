@@ -16,6 +16,11 @@ class QuestionExaminationAnswerItemModel extends Model
     protected $name = 'question_examination_answer_item';
     protected $pk = 'examination_answer_item_id';
 
+    const STATUS_CONFIRM = 1;
+    const STATUS_UN_CONFIRM= 0;
+    const ANSWER_CORRECT_TRUE = 1;
+    const ANSWER_CORRECT_FALSE = 0;
+
     /**
      * 用户提交的选项答案
      * @param $query

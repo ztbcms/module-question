@@ -6,11 +6,21 @@ namespace app\question\model;
 
 use think\Model;
 use think\model\concern\SoftDelete;
+use think\model\relation\HasMany;
 
 class QuestionExaminationModel extends Model
 {
     protected $name = 'question_examination';
     protected $pk = 'examination_id';
+
+    const TYPE_ORDER = 0;
+    const TYPE_RAND = 1;
+
+    function itemApiList(): HasMany
+    {
+        return $this->hasMany(QuestionExaminationItemModel::class, 'examination_id', 'examination_id')
+            ->with('bind_api_item')->hidden(['examination_id', 'id']);
+    }
 
     /**
      * 保存关联题目
@@ -24,7 +34,8 @@ class QuestionExaminationModel extends Model
         $examination_id = $examination->examination_id;
         //删除已有的选项
         if ($examination_id) {
-            QuestionExaminationItemModel::destroy(function ($query) use ($examination_id) {
+            QuestionExaminationItemModel::destroy(function ($query) use ($examination_id)
+            {
                 $query->where('examination_id', $examination_id);
             });
         }
@@ -43,7 +54,7 @@ class QuestionExaminationModel extends Model
 
     /**
      * 试卷下的选项列表
-     * @return \think\model\relation\HasMany
+     * @return HasMany
      */
     function itemList()
     {

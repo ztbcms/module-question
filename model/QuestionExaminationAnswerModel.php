@@ -7,6 +7,7 @@ namespace app\question\model;
 use think\facade\Db;
 use think\Model;
 use think\model\concern\SoftDelete;
+use think\model\relation\HasOne;
 
 class QuestionExaminationAnswerModel extends Model
 {
@@ -27,50 +28,35 @@ class QuestionExaminationAnswerModel extends Model
      */
     static function saveItemAnswer($examination_answer, $item_id, $option_values)
     {
-        $option_values = explode(',', $option_values);
         //获取题目所有选项
-        $item = QuestionItemModel::where('item_id', $item_id)->findOrEmpty();
+        $item = QuestionItemModel::where('item_id', $item_id)
+            ->where('item_kind', QuestionItemModel::ITEM_KIND_QUESTION)
+            ->findOrEmpty();
         throw_if($item->isEmpty(), new \Exception('找不到该题目'));
-        $examination_answer_id = $examination_answer->examination_answer_id;
 
+        $option_values = explode(',', $option_values);
+        $examination_answer_id = $examination_answer->examination_answer_id;
         Db::startTrans();
-        QuestionExaminationAnswerItemModel::destroy(function ($query) use ($examination_answer_id, $item_id) {
+        QuestionExaminationAnswerItemModel::destroy(function ($query) use ($examination_answer_id, $item_id)
+        {
             $query->where('examination_answer_id', $examination_answer_id)->where('item_id', $item_id);
         });
         foreach ($option_values as $index => $option_value) {
             $option_value = trim($option_value);
-            $is_fill = 1;
-            $is_answer_correct = 0; //是否为正确答案
+            $is_fill = QuestionExaminationAnswerItemModel::ANSWER_CORRECT_TRUE;
+            $is_answer_correct = QuestionExaminationAnswerItemModel::ANSWER_CORRECT_FALSE; //是否为正确答案
             if ($item->item_type != QuestionItemModel::ITEM_TYPE_FILL) {
                 $is_fill = 0;
-                // 单选题提交多个答案
-                throw_if($item->item_type == QuestionItemModel::ITEM_TYPE_RADIO && count($option_values) > 1,
-                    new \Exception('单选题仅允许选择一个选项'));
-                if ($option_value == '') {
-                    continue;
-                }
                 //检查是否有该选项
-                $option_value_is_exist = QuestionItemOptionModel::where('item_id', $item_id)
-                    ->where('option_value', $option_value)
-                    ->count();
-                //查询题目选项是否为正确答案 1为正确
-                $option_value_true = QuestionItemOptionModel::where('item_id', $item_id)
-                    ->where('option_value', $option_value)
-                    ->field('option_true')
-                    ->select()
-                    ->toArray();
-                //当选择题选择正确时赋值
-                if ($option_value_true[0]['option_true'] == 1) {
+                $option = QuestionItemOptionModel::where('item_id', $item_id)
+                    ->where('option_value', trim($option_value))
+                    ->findOrEmpty();
+                if (!$option->isEmpty() && $option->option_true == QuestionItemOptionModel::OPTION_TRUE) {
                     $is_answer_correct = 1;
-                } else {
-                    $is_answer_correct = 0;
                 }
-                throw_if($option_value_is_exist == 0, new \Exception('选项不存在'));
             } else {
-                $is_answer_correct = 1;
-            }
-            if ($option_value == '') {
-                $is_answer_correct = 0;
+                //填空题，不为空则正确
+                $is_answer_correct = $option_value != '' ? QuestionExaminationAnswerItemModel::ANSWER_CORRECT_TRUE : QuestionExaminationAnswerItemModel::ANSWER_CORRECT_FALSE;
             }
             $answer_item = new QuestionExaminationAnswerItemModel();
             $answer_item->examination_id = $examination_answer->examination_id;
@@ -87,7 +73,7 @@ class QuestionExaminationAnswerModel extends Model
 
     /**
      * 关联问卷标题
-     * @return \think\model\relation\HasOne
+     * @return HasOne
      */
     function bindExaminationTitle()
     {
@@ -101,84 +87,59 @@ class QuestionExaminationAnswerModel extends Model
      * @param $data
      * @return int
      */
-    function getItemCountAttr($value, $data)
+    function getItemCountAttr($value, $data): int
     {
-        return QuestionExaminationItemModel::where('examination_id', $data['examination_id'])
-            ->count();
+        $examination_answer_id = $data['examination_answer_id'] ?? 0;
+        //获取按题目分组所有答题总数
+        return QuestionExaminationAnswerItemModel::where('examination_answer_id', $examination_answer_id)
+            ->group('item_id')->count();
     }
 
     /**
-     * 答题正确数 answer_correct getAnswerCorrectAttr
-     * @return \think\model\relation\HasOne
+     * 答题正确数
+     * @param $value
+     * @param $data
+     * @return int
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\db\exception\DataNotFoundException
      */
-    function getAnswerCorrectAttr($value, $data)
+    function getAnswerCorrectAttr($value, $data): int
     {
-        //回答表关联题目表             用户提交的答案表
-        $item_data = Db::name('question_examination_answer_item')
-            ->alias('eai')
-            ->where('eai.examination_answer_id', $data['examination_answer_id'])
-            ->join('question_item_option io', 'eai.item_id = io.item_id', 'left')//题目选项表
-            ->field('eai.*,io.option_type,io.option_true')
-            ->select();
-        //计算填空题有几个输入框
-        $pick_count = $this::pickCount($value, $data);
-        //计算用户提交了几个输入框
-        $pick_data = $this::pickData($value, $data);
+        $examination_answer_id = $data['examination_answer_id'] ?? 0;
+        //获取按题目分组所有答题总数
+        $total_count = QuestionExaminationAnswerItemModel::where('examination_answer_id', $examination_answer_id)
+            ->group('item_id')->count();
 
-        //用户提交的试卷答案正确数
-        $correct_number = 0;
-        $checkbox_data = '';
-        foreach ($item_data as $key => $val) {
-            //回答是否正确1    题目选项是否为正确答案
-            if ($val['is_answer_correct'] == $val['option_true']) {
-                //当题目类型为复选框时，判断是否所有选项都对
-                if ($val['option_type'] == 1) {
-                    if ($val['is_answer_correct'] == $val['option_true'] && $val['is_answer_correct'] == 1) {
-                        $checkbox_data .= '1';
-                    } else {
-                        $checkbox_data .= '0';
-                    }
-                    //当题目为单选框时
-                } else {
-                    if ($val['option_type'] == 0) {
-                        $correct_number += 1;
-                    }
-                }
-            }
-            //多选题如果有一个选项选错了，那这道题就算错的
-            $tmparray = explode('0', $checkbox_data);
-            if (count($tmparray) < 1) {
-                $correct_number += 1;
-            }
-        }
-        if ($pick_count == $pick_data) {
-            $correct_number += 1;
-        }
-        return $correct_number;
+        //获取按题目分组所有答错
+        $error_count = QuestionExaminationAnswerItemModel::where('examination_answer_id', $examination_answer_id)
+            ->where('is_answer_correct', QuestionExaminationAnswerItemModel::ANSWER_CORRECT_FALSE)
+            ->group('item_id')->count();
+        return ($total_count - $error_count) >= 0 ? $total_count - $error_count : 0;
     }
 
-    //计算填空题有几个输入框
-    static function pickCount($value, $data)
+    /**
+     * 获取正确数和答题数比例
+     * @return string
+     */
+    function getProportionAttr($value, $data): string
     {
-        return Db::name('question_examination_item')
-            ->alias('ei')
-            ->where('ei.examination_id', $data['examination_id'])
-            ->join('question_item_option io', 'ei.item_id = io.item_id', 'left')//题目选项表
-            ->where('io.option_type', 2)
-            ->count();
+        $examination_answer_id = $data['examination_answer_id'] ?? 0;
+        //获取按题目分组所有答题总数
+        $total_count = QuestionExaminationAnswerItemModel::where('examination_answer_id',
+            $examination_answer_id)
+            ->group('item_id')->count();
+
+        //获取按题目分组所有答错
+        $error_count = QuestionExaminationAnswerItemModel::where('examination_answer_id',
+            $examination_answer_id)
+            ->where('is_answer_correct', QuestionExaminationAnswerItemModel::ANSWER_CORRECT_FALSE)
+            ->group('item_id')->count();
+        return ($total_count - $error_count).'/'.$total_count;
     }
 
-    //计算用户提交了几个输入框
-    static function pickData($value, $data)
+    function getConfirmTimeAttr($value)
     {
-        return Db::name('question_examination_answer_item')
-            ->alias('eai')
-            ->join('question_item_option io', 'eai.item_id = io.item_id', 'left')//题目选项表
-            ->field('count(*)')
-            ->where('eai.examination_answer_id', $data['examination_answer_id'])
-            ->where('io.option_type', 2)
-            ->group('eai.option_value')
-            ->count();
+        return date('Y-m-d H:i:s', $value);
     }
-
 }

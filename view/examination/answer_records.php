@@ -2,9 +2,10 @@
     <div id="app" style="padding: 8px;" v-cloak>
         <div>
             <el-card>
-                <div>
+                <div slot="header">
                     <el-breadcrumb separator="/">
-                        <el-breadcrumb-item><a href="{:api_url('/question/examination/index')}">答题列表</a></el-breadcrumb-item>
+                        <el-breadcrumb-item><a href="{:api_url('/question/examination/index')}">试卷列表</a>
+                        </el-breadcrumb-item>
                         <el-breadcrumb-item>{{examination.title}}</el-breadcrumb-item>
                     </el-breadcrumb>
                 </div>
@@ -41,7 +42,6 @@
                                 min-width="100">
                         </el-table-column>
                         <el-table-column
-                                align="center"
                                 prop="create_time"
                                 label="起始时间"
                                 min-width="200">
@@ -53,7 +53,7 @@
                         </el-table-column>
                         <el-table-column
                                 label="操作"
-                                min-width="200">
+                                width="120">
                             <template slot-scope="props">
                                 <el-button @click="detailEvent(props.row)" type="primary">详情</el-button>
                             </template>
@@ -112,7 +112,7 @@
                             }
                         })
                     },
-                    searchSubmit: function (){
+                    searchSubmit: function () {
                         this.getList()
                     }
                 },

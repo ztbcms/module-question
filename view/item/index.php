@@ -2,7 +2,11 @@
     <div id="app" style="padding: 8px;" v-cloak>
         <div>
             <el-card>
-                <h3>题目列表</h3>
+                <div slot="header">
+                    <el-breadcrumb separator="/">
+                        <el-breadcrumb-item>题目列表</el-breadcrumb-item>
+                    </el-breadcrumb>
+                </div>
                 <div style="display: flex;justify-content: space-between">
                     <div>
                         <el-form :inline="true" :model="search_where" class="demo-form-inline">
@@ -31,7 +35,6 @@
                     </div>
                     <div>
                         <el-button @click="addItem" type="primary">添加题目</el-button>
-<!--                        @click="show=true;edit_item={}"-->
                     </div>
                 </div>
                 <div>
@@ -96,16 +99,16 @@
                     search_where: {}
                 },
                 methods: {
-                    addItem:function(){
+                    addItem: function () {
                         var that = this;
                         var url = "{:api_url('/question/item/addQuestion')}";
                         layer.open({
                             type: 2,
                             title: '新增题目',
                             shadeClose: true,
-                            area: ['60%', '60%'],
+                            area: ['800px', '600px'],
                             content: url,
-                            end: function(){
+                            end: function () {
                                 that.getList()
                             }
                         });
@@ -132,16 +135,16 @@
                         })
                     },
                     //编辑题目
-                    editItemEvent: function (item){
+                    editItemEvent: function (item) {
                         var that = this;
                         var url = "{:api_url('/question/item/addQuestion')}?item_id=" + item;
                         layer.open({
                             type: 2,
                             title: '编辑题目',
                             shadeClose: true,
-                            area: ['60%', '60%'],
+                            area: ['800px', '600px'],
                             content: url,
-                            end: function(){
+                            end: function () {
                                 that.getList()
                             }
                         });
