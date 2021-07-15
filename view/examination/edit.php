@@ -239,10 +239,10 @@
                             type: 2,
                             title: '新增题目',
                             shadeClose: true,
-                            area: ['60%', '60%'],
+                            area: ['800px', '600px'],
                             content: url,
                             end: function () {
-                                that.getList()
+                                that.getItemList()
                             }
                         });
                     }

@@ -5,7 +5,7 @@
                 <div>
                     <el-breadcrumb separator="/">
                         <el-breadcrumb-item><a href="{:api_url('/question/questionnaire/index')}">问卷列表</a></el-breadcrumb-item>
-                        <el-breadcrumb-item>{{questionnaire.title}}</el-breadcrumb-item>
+                        <el-breadcrumb-item>提交记录：{{questionnaire.title}}</el-breadcrumb-item>
                     </el-breadcrumb>
                 </div>
                 <div style="margin-top: 20px">

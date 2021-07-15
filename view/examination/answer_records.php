@@ -6,7 +6,7 @@
                     <el-breadcrumb separator="/">
                         <el-breadcrumb-item><a href="{:api_url('/question/examination/index')}">试卷列表</a>
                         </el-breadcrumb-item>
-                        <el-breadcrumb-item>{{examination.title}}</el-breadcrumb-item>
+                        <el-breadcrumb-item>提交记录：{{examination.title}}</el-breadcrumb-item>
                     </el-breadcrumb>
                 </div>
                 <div style="display: flex;justify-content: space-between;margin-top:10px;">

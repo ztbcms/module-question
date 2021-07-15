@@ -3,13 +3,10 @@
         <div>
             <el-card>
                 <div>
-                    <h3>问卷分析</h3>
-                </div>
-                <div>
                     <el-breadcrumb separator="/">
                         <el-breadcrumb-item><a href="{:api_url('/question/questionnaire/index')}">问卷列表</a>
                         </el-breadcrumb-item>
-                        <el-breadcrumb-item>{{questionnaire.title}}</el-breadcrumb-item>
+                        <el-breadcrumb-item>问卷分析：{{questionnaire.title}}</el-breadcrumb-item>
                     </el-breadcrumb>
                 </div>
                 <div style="margin-top: 20px">

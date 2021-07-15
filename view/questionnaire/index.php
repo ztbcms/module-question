@@ -2,7 +2,11 @@
     <div id="app" style="padding: 8px;" v-cloak>
         <div>
             <el-card>
-                <h3>问卷列表</h3>
+                <div slot="header" class="clearfix">
+                    <el-breadcrumb separator="/">
+                        <el-breadcrumb-item>问卷列表</el-breadcrumb-item>
+                    </el-breadcrumb>
+                </div>
                 <div style="display: flex;justify-content: space-between">
                     <div>
                         <el-form :inline="true" :model="search_where" class="demo-form-inline">

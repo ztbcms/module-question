@@ -1,7 +1,12 @@
 <div>
     <div id="app" style="padding: 8px;" v-cloak>
         <el-card>
-            <h3>问卷列表</h3>
+            <div slot="header" class="clearfix">
+                <el-breadcrumb separator="/">
+                    <el-breadcrumb-item><a href="{:url('question/questionnaire/index')}">问卷列表</a></el-breadcrumb-item>
+                    <el-breadcrumb-item>{{questionnaire_id>0?'编辑问卷':'新增问卷'}}</el-breadcrumb-item>
+                </el-breadcrumb>
+            </div>
             <div style="margin-top: 20px">
                 <el-form ref="form" :model="form" label-width="80px">
                     <el-form-item label="问卷标题">
@@ -23,7 +28,7 @@
                                     <el-option v-for="(item,index) in items" :key="item.item_id" :label="item.content"
                                                :value="item.item_id"></el-option>
                                 </el-select>
-                                <i @click="show_edit_time=true"
+                                <i @click="addItem"
                                    style="margin-left: 10px;display: flex;cursor: pointer;color: #409EFF;font-size: 24px;line-height: 24px"
                                    class="el-icon-circle-plus"></i>
                                 <small style="color: #F56C6C;margin-left: 10px">选择框只作为选择工具，最终提交数据以下面表格内容为准</small>
@@ -76,11 +81,8 @@
                 </el-form>
             </div>
         </el-card>
-        <question-edit-item @success="getItemList" @close="show_edit_time=false"
-                            :show.sync="show_edit_time"></question-edit-item>
     </div>
 
-    {include file="/components/edit-item"}
     <!-- CDNJS :: Sortable (https://cdnjs.com/) -->
     <script src="//cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
     <!-- CDNJS :: Vue.Draggable (https://cdnjs.com/) -->
@@ -92,7 +94,6 @@
                 mixins: [],
                 computed: {},
                 data: {
-                    show_edit_time: false,
                     questionnaire_id: "<?php echo $_GET['questionnaire_id'] ?? 0;?>",
                     form: {},
                     loading: false,
@@ -101,6 +102,21 @@
                     select_item_list: []
                 },
                 methods: {
+                    //添加题目
+                    addItem: function () {
+                        var that = this;
+                        var url = "{:api_url('/question/item/addQuestion')}";
+                        layer.open({
+                            type: 2,
+                            title: '新增题目',
+                            shadeClose: true,
+                            area: ['800px', '600px'],
+                            content: url,
+                            end: function () {
+                                that.getItemList()
+                            }
+                        });
+                    },
                     backEvent: function () {
                         history.back()
                     },
