@@ -190,7 +190,7 @@
                     pack: [], // 填空题 选项
                     form: {
                         item_id: '',
-                        item_kind: '0',
+                        item_kind: '{$item_kind}',
                         item_type: '0',
                         content: ''
                     },

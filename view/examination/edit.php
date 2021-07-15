@@ -234,7 +234,7 @@
                     //添加题目
                     addItem: function () {
                         var that = this;
-                        var url = "{:api_url('/question/item/addQuestion')}";
+                        var url = "{:api_url('/question/item/addQuestion',['item_kind'=>1])}";
                         layer.open({
                             type: 2,
                             title: '新增题目',

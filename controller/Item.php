@@ -101,17 +101,18 @@ class Item extends AdminController
      * 新增/编辑选项
      * @return \think\response\Json|\think\response\View
      */
-    function addQuestion(){
+    function addQuestion()
+    {
         $_action = input('_action');
+        $item_kind = input('item_kind', 0);
         //获取题目详情
         if (Request::isGet() && $_action == 'getDetail') {
             $item_id = Request::param('item_id', '', 'trim');
             $res = QuestionItemModel::getDetails($item_id);
             return json($res);
         }
-        return view('edit_item');
+        return view('edit_item', ['item_kind' => $item_kind]);
     }
-
 
 
 }
