@@ -2,7 +2,11 @@
     <div id="app" style="padding: 8px;" v-cloak>
         <div>
             <el-card>
-                <h3>题目列表</h3>
+                <div slot="header">
+                    <el-breadcrumb separator="/">
+                        <el-breadcrumb-item>题目列表</el-breadcrumb-item>
+                    </el-breadcrumb>
+                </div>
                 <div style="display: flex;justify-content: space-between">
                     <div>
                         <el-form :inline="true" :model="search_where" class="demo-form-inline">
@@ -30,7 +34,7 @@
                         </el-form>
                     </div>
                     <div>
-                        <el-button @click="show=true;edit_item={}" type="primary">添加题目</el-button>
+                        <el-button @click="addItem" type="primary">添加题目</el-button>
                     </div>
                 </div>
                 <div>
@@ -61,7 +65,7 @@
                                 label="操作"
                                 width="200">
                             <template slot-scope="props">
-                                <el-button @click="editItemEvent(props.row)" type="primary">编辑</el-button>
+                                <el-button @click="editItemEvent(props.row.item_id)" type="primary">编辑</el-button>
                                 <el-button @click="deleteItemEvent(props.row)" type="danger">删除</el-button>
                             </template>
                         </el-table-column>
@@ -79,13 +83,8 @@
                     </div>
                 </div>
             </el-card>
-            <div>
-                <question-edit-item @success="getList" :item="edit_item" @close="show=false"
-                                    :show.sync="show"></question-edit-item>
-            </div>
         </div>
     </div>
-    {include file="/components/edit-item"}
     <!--    如果公共方法没有定义 window.__vueList 打开这个注释 -->
     {include file="/components/vue-list"}
     <script>
@@ -95,15 +94,30 @@
                 mixins: [window.__vueList],
                 data: {
                     lists: [],
-                    show: false,
+                    show: true,
                     edit_item: {},
                     search_where: {}
                 },
                 methods: {
+                    addItem: function () {
+                        var that = this;
+                        var url = "{:api_url('/question/item/addQuestion')}";
+                        layer.open({
+                            type: 2,
+                            title: '新增题目',
+                            shadeClose: true,
+                            area: ['800px', '600px'],
+                            content: url,
+                            end: function () {
+                                that.getList()
+                            }
+                        });
+                    },
                     searchSubmit: function () {
                         this.currentPage = 1
                         this.getList()
                     },
+                    //删除题目
                     deleteItemEvent: function (item) {
                         var _this = this
                         this.$confirm("是否确认删除 " + item.content + ' ?').then(() => {
@@ -120,10 +134,25 @@
                         }).catch(err => {
                         })
                     },
+                    //编辑题目
                     editItemEvent: function (item) {
-                        this.show = true
-                        this.edit_item = item
+                        var that = this;
+                        var url = "{:api_url('/question/item/addQuestion')}?item_id=" + item;
+                        layer.open({
+                            type: 2,
+                            title: '编辑题目',
+                            shadeClose: true,
+                            area: ['800px', '600px'],
+                            content: url,
+                            end: function () {
+                                that.getList()
+                            }
+                        });
                     },
+                    // editItemEvent: function (item) {
+                    //     this.show = true
+                    //     this.edit_item = item
+                    // },
                     getList: function () {
                         var _this = this;
                         $.ajax({

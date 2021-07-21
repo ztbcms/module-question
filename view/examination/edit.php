@@ -3,20 +3,30 @@
         <el-card>
             <div slot="header" class="clearfix">
                 <el-breadcrumb separator="/">
-                    <el-breadcrumb-item><a href="{:url('question/questionnaire/index')}">问卷列表</a></el-breadcrumb-item>
-                    <el-breadcrumb-item>{{questionnaire_id>0?'编辑问卷':'新增问卷'}}</el-breadcrumb-item>
+                    <el-breadcrumb-item><a href="{:url('question/examination/index')}">试卷列表</a></el-breadcrumb-item>
+                    <el-breadcrumb-item>{{examination_id>0?'编辑试卷':'新增试卷'}}</el-breadcrumb-item>
                 </el-breadcrumb>
             </div>
             <div style="margin-top: 20px">
                 <el-form ref="form" :model="form" label-width="80px">
-                    <el-form-item label="问卷标题">
+                    <el-form-item label="试卷标题">
                         <el-input style="width: 500px" v-model="form.title"></el-input>
                     </el-form-item>
-                    <el-form-item label="问卷简介">
-                        <el-input style="width: 500px" type="textarea" placeholder="简单描述问卷"
+                    <el-form-item label="答题方式">
+                        <el-radio-group v-model="form.type">
+                            <el-radio :label="0">顺序</el-radio>
+                            <el-radio :label="1">
+                                随机
+                                <el-input style="width: 200px" v-model="form.number" placeholder="请输入随机答题的数量"
+                                          v-bind:disabled="form.type==0"></el-input>
+                            </el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="答题简介">
+                        <el-input style="width: 500px" type="textarea" placeholder="简单描述答题"
                                   v-model="form.description"></el-input>
                     </el-form-item>
-                    <el-form-item label="问卷题目">
+                    <el-form-item label="答题题目">
                         <div>
                             <div style="display: flex;align-items: center">
                                 <el-select style="width: 500px" v-model="select_item" @change="itemChangeEvent"
@@ -24,7 +34,7 @@
                                            multiple
                                            :remote-method="getItemList"
                                            :loading="loading" @remove-tag="removeItemOption" remote filterable
-                                           placeholder="请选择问卷题目">
+                                           placeholder="请选择答题题目">
                                     <el-option v-for="(item,index) in items" :key="item.item_id" :label="item.content"
                                                :value="item.item_id"></el-option>
                                 </el-select>
@@ -94,43 +104,34 @@
                 mixins: [],
                 computed: {},
                 data: {
-                    questionnaire_id: "<?php echo $_GET['questionnaire_id'] ?? 0;?>",
-                    form: {},
+                    show_edit_time: false,
+                    examination_id: "<?php echo $_GET['examination_id'] ?? 0;?>",
+                    form: {
+                        type: 0
+                    },
                     loading: false,
                     items: [],
                     select_item: "",
-                    select_item_list: []
+                    select_item_list: [],
                 },
                 methods: {
-                    //添加题目
-                    addItem: function () {
-                        var that = this;
-                        var url = "{:api_url('/question/item/addQuestion')}";
-                        layer.open({
-                            type: 2,
-                            title: '新增题目',
-                            shadeClose: true,
-                            area: ['800px', '600px'],
-                            content: url,
-                            end: function () {
-                                that.getItemList()
-                            }
-                        });
-                    },
                     backEvent: function () {
                         history.back()
                     },
+                    //获取试卷信息
                     getEditInfo: function () {
                         var _this = this
-                        this.httpGet('{:api_url("question/questionnaire/edit")}', {
-                            questionnaire_id: this.questionnaire_id
+                        this.httpGet('{:api_url("question/examination/edit")}', {
+                            examination_id: this.examination_id
                         }, function (res) {
                             if (res.status) {
                                 var detail = res.data.detail
                                 _this.form = {
-                                    questionnaire_id: detail.questionnaire_id,
+                                    examination_id: detail.examination_id,
                                     title: detail.title,
                                     description: detail.description,
+                                    type: parseInt(detail.type),
+                                    number: parseInt(detail.number),
                                 }
                                 _this.select_item_list = detail.item_list
                             }
@@ -139,7 +140,15 @@
                     onSubmit: function () {
                         var postData = this.form
                         if (this.select_item_list.length === 0) {
-                            this.$message.error('请选择问卷题目');
+                            this.$message.error('请选择答题题目');
+                            return
+                        }
+                        if (postData.title === undefined || postData.title === '') {
+                            this.$message.error('请填写答题标题');
+                            return
+                        }
+                        if (postData.description === undefined || postData.description === '') {
+                            this.$message.error('请填写答题简介');
                             return
                         }
                         var item_ids = []
@@ -147,26 +156,24 @@
                             item_ids.push(item.item_id)
                         })
                         postData['item_ids'] = item_ids
-                        console.log('postData', postData)
                         var _this = this
-                        this.httpPost('{:api_url("question/questionnaire/edit")}', postData, function (res) {
+                        this.httpPost('{:api_url("question/examination/edit")}', postData, function (res) {
                             if (res.status) {
                                 _this.$message.success('操作成功')
                                 setTimeout(function () {
-                                    location.href = "{:url('question/questionnaire/index')}"
+                                    location.href = "{:url('question/examination/index')}"
                                 }, 1500)
                             } else {
                                 _this.$message.error(res.msg)
                             }
                         })
                     },
-                    //删除问卷的一个题目
+                    //删除一个选项
                     deleteItemEvent: function (index) {
                         this.select_item_list.splice(index, 1)
                     },
-                    //多选模式下移除tag时触发
+                    //删除一个题目
                     removeItemOption: function (item_id) {
-                        console.log('removeItemOption', item_id)
                         var index = this.select_item_list.findIndex(item => {
                             return parseInt(item.item_id) === parseInt(item_id)
                         })
@@ -174,9 +181,8 @@
                             this.deleteItemEvent(index)
                         }
                     },
-                    //为问卷增加一个题目
+                    //添加答题题目
                     itemChangeEvent: function (item_ids) {
-                        console.log('itemChangeEvent', item_ids)
                         var _this = this
                         item_ids.forEach(item_id => {
                             var item = _this.items.find(item => {
@@ -192,12 +198,12 @@
                             }
                         })
                     },
-                    //获取问卷题目列表
+                    //获取答题题目类型
                     getItemList: function (query) {
                         console.log('getItemList', query)
                         var _this = this
                         _this.loading = true
-                        this.httpGet('{:api_url("question/questionnaire/getItemList")}', {query: query}, function (res) {
+                        this.httpGet('{:api_url("question/examination/getItemList")}', {query: query}, function (res) {
                             _this.loading = false
                             if (res.status) {
                                 var items = res.data.items
@@ -205,15 +211,12 @@
                             }
                         })
                     },
-                    //渲染问卷题目表格
+                    //渲染题目表格
                     initSortable() {
                         const tbody = document.querySelector('.el-table__body-wrapper tbody')
                         const _this = this
                         Sortable.create(tbody, {
                             onEnd({newIndex, oldIndex}) {
-                                console.log({newIndex, oldIndex})
-                                // const currRow = _this.select_item_list.splice(oldIndex, 1)[0]
-                                // _this.select_item_list.splice(newIndex, 0, currRow)
 
                                 const currRow = _this.select_item_list.splice(oldIndex, 1)[0]
                                 var new_select_item_list = []
@@ -227,13 +230,28 @@
                                 }, 10)
                             }
                         })
+                    },
+                    //添加题目
+                    addItem: function () {
+                        var that = this;
+                        var url = "{:api_url('/question/item/addQuestion',['item_kind'=>1])}";
+                        layer.open({
+                            type: 2,
+                            title: '新增题目',
+                            shadeClose: true,
+                            area: ['800px', '600px'],
+                            content: url,
+                            end: function () {
+                                that.getItemList()
+                            }
+                        });
                     }
                 },
                 mounted: function () {
                     this.initSortable()
                     window.__GLOBAL_ELEMENT_LOADING_INSTANCE_ENABLE = false
                     this.getItemList()
-                    if (parseInt(this.questionnaire_id) > 0) {
+                    if (parseInt(this.examination_id) > 0) {
                         this.getEditInfo()
                     }
                 },

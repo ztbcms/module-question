@@ -11,6 +11,8 @@ namespace app\question\model;
 
 use think\Model;
 use think\model\concern\SoftDelete;
+use think\facade\Db;
+use app\common\service\BaseService;
 
 class QuestionItemModel extends Model
 {
@@ -39,31 +41,53 @@ class QuestionItemModel extends Model
         $item_id = $question_item->item_id;
         //删除已有的选项
         if ($item_id) {
-            QuestionItemOptionModel::destroy(function ($query) use ($item_id)
-            {
+            QuestionItemOptionModel::destroy(function ($query) use ($item_id) {
                 $query->where('item_id', $item_id);
             });
         }
         //增加新的选项
         $saveData = [];
         foreach ($options as $option) {
-            $saveData[] = [
-                'item_id'          => $item_id,
-                'option_value'     => $option['option_value'] ?? '',
-                'option_img'       => $option['option_img'] ?? '',
-                'option_fill_type' => $option['option_fill_type'] ?? '',
-            ];
+            if (!empty($option)) {
+                foreach ($option as $data) {
+                    if ($data['option_true'] === 'true' || $data['option_true'] == '1') {
+                        $data['option_true'] = 1;
+                    } else {
+                        $data['option_true'] = 0;
+                    }
+                    $saveData[] = [
+                        'item_id'          => $item_id,
+                        'option_value'     => $data['option_value'] ?? '',
+                        'option_img'       => $data['option_img'] ?? '',
+                        'option_fill_type' => $data['option_fill_type'] ?? '',
+                        'option_type'      => $data['option_type'] ?? '',
+                        'option_true'      => $data['option_true'] ?? '0',
+                        'reference_answer' => $data['reference_answer'] ?? '',
+                    ];
+                }
+            }
+
         }
         $question_item_option = new QuestionItemOptionModel();
         return $question_item_option->saveAll($saveData);
     }
 
+    /**
+     * 项目选项
+     * @return \think\model\relation\HasMany
+     */
     public function itemOptions()
     {
         return $this->hasMany(QuestionItemOptionModel::class, 'item_id', 'item_id')
             ->field(['item_id', 'option_value', 'option_img', 'option_fill_type']);
     }
 
+    /**
+     * 判断类型是问卷/试卷
+     * @param $value
+     * @param $data
+     * @return string
+     */
     function getItemKindTextAttr($value, $data)
     {
         if ($data['item_kind'] == self::ITEM_KIND_QUESTIONNAIRE) {
@@ -74,6 +98,12 @@ class QuestionItemModel extends Model
         }
     }
 
+    /**
+     * 分析题目类型
+     * @param $value
+     * @param $data
+     * @return string
+     */
     function getItemTypeTextAttr($value, $data)
     {
         if ($data['item_type'] == self::ITEM_TYPE_RADIO) {
@@ -89,11 +119,50 @@ class QuestionItemModel extends Model
         return $value;
     }
 
+    /**
+     * 判断是否有问卷或答题用到这一题目
+     * @param $item_id
+     * @return bool
+     */
     static function checkDelete($item_id)
     {
         if (QuestionQuestionnaireItemModel::where('item_id', $item_id)->count() > 0) {
             return false;
         }
         return true;
+    }
+
+    /**
+     * 获取题目详情
+     * @param $item_id
+     * @return array
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\DbException
+     * @throws \think\db\exception\ModelNotFoundException
+     */
+    static function getDetails($item_id)
+    {
+        $data = Db::name('question_item')->field('item_id, item_kind, item_type,content')->where('item_id',
+            $item_id)->find();
+        $data2 = Db::name('question_item_option')->where('item_id', $item_id)->select()->toArray();
+        $data['item_kind'] = (string) $data['item_kind'];
+        $data['item_type'] = (string) $data['item_type'];
+        $radio_data = [];
+        $checkbox_data = [];
+        $pack = [];
+        foreach ($data2 as $item) {
+            if ($item['option_type'] == '0') {
+                $radio_data[] = $item;
+            } else {
+                if ($item['option_type'] == '1') {
+                    $checkbox_data[] = $item;
+                } else {
+                    $pack[] = $item;
+                }
+            }
+        }
+        $res = ['form' => $data, 'radio_data' => $radio_data, 'checkbox_data' => $checkbox_data, 'pack' => $pack];
+        return BaseService::createReturn(true, $res);
+
     }
 }

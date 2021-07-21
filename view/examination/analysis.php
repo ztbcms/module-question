@@ -2,11 +2,11 @@
     <div id="app" style="padding: 8px;" v-cloak>
         <div>
             <el-card>
-                <div>
+                <div slot="header">
                     <el-breadcrumb separator="/">
-                        <el-breadcrumb-item><a href="{:api_url('/question/questionnaire/index')}">问卷列表</a>
+                        <el-breadcrumb-item><a href="{:api_url('/question/examination/index')}">试卷列表</a>
                         </el-breadcrumb-item>
-                        <el-breadcrumb-item>问卷分析：{{questionnaire.title}}</el-breadcrumb-item>
+                        <el-breadcrumb-item>答题分析： {{examination.title}}</el-breadcrumb-item>
                     </el-breadcrumb>
                 </div>
                 <div style="margin-top: 20px">
@@ -21,24 +21,31 @@
                         </el-table-column>
                         <el-table-column
                                 prop="content"
-                                label="题目"
-                                min-width="400"
+                                label="问题"
+                                min-width="200"
                         >
                         </el-table-column>
                         <el-table-column
                                 align="center"
                                 prop="item_type_text"
-                                label="题目类型"
+                                label="类型"
                                 min-width="200">
                         </el-table-column>
                         <el-table-column
-                                label="统计"
-                                min-width="400">
-                            <template slot-scope="props">
-                                <div>
-                                    <canvas :id="'mountNode'+props.$index"></canvas>
-                                </div>
-                            </template>
+                                align="center"
+                                prop="answer_count"
+                                label="正确/回答"
+                                min-width="200">
+                        </el-table-column>
+                        <el-table-column
+                                prop="right_key"
+                                label="正确答案"
+                                min-width="200">
+                        </el-table-column>
+                        <el-table-column
+                                prop="accuracy"
+                                label="正确率"
+                                min-width="100">
                         </el-table-column>
                     </el-table>
                     <div style="text-align: center;margin-top: 20px">
@@ -59,20 +66,17 @@
     <!--    如果公共方法没有定义 window.__vueList 打开这个注释 -->
     {include file="/components/vue-list"}
     <script src="https://gw.alipayobjects.com/os/antv/assets/f2/3.4.2/f2.min.js"></script>
-    <!-- 在 PC 上模拟 touch 事件 -->
-    <script src="https://gw.alipayobjects.com/os/rmsportal/NjNldKHIVQRozfbAOJUW.js"></script>
-
     <script>
         $(document).ready(function () {
             new Vue({
                 el: '#app',
                 mixins: [window.__vueList],
                 data: {
-                    questionnaire_id: "<?php echo $_GET['questionnaire_id'] ?? 0?>",
+                    examination_id: "<?php echo $_GET['examination_id'] ?? 0?>",
                     lists: [],
                     show: false,
                     edit_item: {},
-                    questionnaire: {},
+                    examination: {},
                 },
                 filters: {
                     fix: function (value) {
@@ -83,24 +87,24 @@
                     getList: function () {
                         var _this = this;
                         $.ajax({
-                            url: "{:api_url('question/questionnaire/analysis')}",
+                            url: "{:api_url('question/examination/analysis')}",
                             data: {
-                                questionnaire_id: this.questionnaire_id,
+                                examination_id: this.examination_id,
                             },
                             dataType: 'json',
                             type: 'get',
                             success: function (res) {
-                                _this.questionnaire = res.data.questionnaire
-                                _this.lists = res.data.questionnaire_items
+                                _this.examination = res.data.examination
+                                _this.lists = res.data.examination_items
                                 setTimeout(function () {
                                     for (var index in _this.lists) {
                                         var item = _this.lists[index]
-                                        _this.makeChart(index, item.option_values_analysis.list, item.option_values_analysis.total)
                                     }
                                 }, 1000)
                             }
                         })
                     },
+                    //渲染百分比图形
                     makeChart: function (index, list, total) {
                         var map = {}
                         var data = [];

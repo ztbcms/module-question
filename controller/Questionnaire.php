@@ -140,7 +140,6 @@ class Questionnaire extends AdminController
                 ->where('status', QuestionQuestionnaireAnswerModel::STATUS_CONFIRM)
                 ->order('create_time', 'DESC')
                 ->paginate(20);
-
             return self::makeJsonReturn(true, ['lists' => $data, 'questionnaire' => $questionnaire], 'ok');
         }
         return View::fetch('answer_records');

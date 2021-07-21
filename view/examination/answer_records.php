@@ -2,11 +2,24 @@
     <div id="app" style="padding: 8px;" v-cloak>
         <div>
             <el-card>
-                <div>
+                <div slot="header">
                     <el-breadcrumb separator="/">
-                        <el-breadcrumb-item><a href="{:api_url('/question/questionnaire/index')}">问卷列表</a></el-breadcrumb-item>
-                        <el-breadcrumb-item>提交记录：{{questionnaire.title}}</el-breadcrumb-item>
+                        <el-breadcrumb-item><a href="{:api_url('/question/examination/index')}">试卷列表</a>
+                        </el-breadcrumb-item>
+                        <el-breadcrumb-item>提交记录：{{examination.title}}</el-breadcrumb-item>
                     </el-breadcrumb>
+                </div>
+                <div style="display: flex;justify-content: space-between;margin-top:10px;">
+                    <div>
+                        <el-form :inline="true" :model="search_where" class="demo-form-inline">
+                            <el-form-item>
+                                <el-input v-model="search_where.keyword" placeholder="请输入用户姓名"></el-input>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-button type="primary" @click="searchSubmit">查询</el-button>
+                            </el-form-item>
+                        </el-form>
+                    </div>
                 </div>
                 <div style="margin-top: 20px">
                     <el-table
@@ -14,18 +27,21 @@
                             border
                             style="width: 100%">
                         <el-table-column
-                                prop="questionnaire_id"
+                                prop="examination_id"
                                 label="编号"
                                 width="80">
                         </el-table-column>
                         <el-table-column
                                 prop="target"
                                 label="姓名"
-                                min-width="200"
-                        >
+                                min-width="200">
                         </el-table-column>
                         <el-table-column
-                                align="center"
+                                prop="proportion"
+                                label="正确/答题"
+                                min-width="100">
+                        </el-table-column>
+                        <el-table-column
                                 prop="create_time"
                                 label="起始时间"
                                 min-width="200">
@@ -37,7 +53,7 @@
                         </el-table-column>
                         <el-table-column
                                 label="操作"
-                                min-width="200">
+                                width="120">
                             <template slot-scope="props">
                                 <el-button @click="detailEvent(props.row)" type="primary">详情</el-button>
                             </template>
@@ -66,33 +82,39 @@
                 el: '#app',
                 mixins: [window.__vueList],
                 data: {
-                    questionnaire_id: "<?php echo $_GET['questionnaire_id'] ?? 0?>",
+                    examination_id: "<?php echo $_GET['examination_id'] ?? 0?>",
                     lists: [],
                     show: false,
                     edit_item: {},
-                    questionnaire: {}
+                    examination: {},
+                    search_where: {},
+                    answer_correct: '',
+                    proportion: ''
                 },
                 methods: {
-                    //跳转详情页
+                    //打开详情页面
                     detailEvent: function (item) {
-                        location.href = "{:api_url('question/questionnaire/answer_records_detail',['questionnaire_answer_id'=>''])}" + item.questionnaire_answer_id
+                        location.href = "{:api_url('question/examination/answer_records_detail',['examination_answer_id'=>''])}" + item.examination_answer_id
                     },
                     getList: function () {
                         var _this = this;
                         $.ajax({
-                            url: "{:api_url('question/questionnaire/answer_records')}",
+                            url: "{:api_url('question/examination/answer_records')}",
                             data: Object.assign({
-                                questionnaire_id: this.questionnaire_id,
+                                examination_id: this.examination_id,
                                 page: this.currentPage,
-                            }, this.searchForm),
+                            }, this.search_where),
                             dataType: 'json',
                             type: 'get',
                             success: function (res) {
-                                _this.questionnaire = res.data.questionnaire
+                                _this.examination = res.data.examination
                                 _this.handListData({data: res.data.lists})
                             }
                         })
                     },
+                    searchSubmit: function () {
+                        this.getList()
+                    }
                 },
                 mounted: function () {
                     this.getList()

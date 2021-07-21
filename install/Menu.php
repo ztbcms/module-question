@@ -31,6 +31,13 @@ return array(
                 "name"   => "问卷管理",
                 "remark" => "",
             ],
+            [
+                "route"  => "question/examination/index",
+                "type"   => 0,
+                "status" => 1,
+                "name"   => "试卷管理",
+                "remark" => "",
+            ],
         ],
     ),
 );
