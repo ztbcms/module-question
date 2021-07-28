@@ -45,6 +45,22 @@
                                 min-width="200">
                         </el-table-column>
                         <el-table-column
+                                prop="result_status"
+                                label="回答状态"
+                                min-width="100">
+                            <template slot-scope="props">
+                                <el-tag v-if="props.row.result_status==1" type="primary">
+                                    已作答
+                                </el-tag>
+                                <el-tag v-if="props.row.result_status==0" type="danger">
+                                    未作答
+                                </el-tag>
+                                <el-tag v-if="props.row.result_status==2" type="info">
+                                    待判卷
+                                </el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
                                 prop="option_values"
                                 label="回答"
                                 min-width="200">
@@ -53,6 +69,24 @@
                                 prop="right_key"
                                 label="正确答案"
                                 min-width="200">
+                        </el-table-column>
+                        <el-table-column
+                                prop="is_answer_correct"
+                                label="回答结果"
+                                min-width="100">
+                            <template slot-scope="props">
+                                <template v-if="props.row.result_status==2">
+                                    <el-button @click="gradeItem(props.row.item_id)" size="small" type="primary">判卷</el-button>
+                                </template>
+                                <template v-else>
+                                    <el-tag v-if="props.row.is_answer_correct==1" type="success">
+                                        正确
+                                    </el-tag>
+                                    <el-tag v-else type="danger">
+                                        错误
+                                    </el-tag>
+                                </template>
+                            </template>
                         </el-table-column>
                         <el-table-column
                                 label="操作"
@@ -112,6 +146,20 @@
                     }
                 },
                 methods: {
+                    gradeItem: function (item_id) {
+                        var that = this;
+                        var url = "{:api_url('/question/examination/gradeItem',['examination_answer_id'=>''])}" + this.examination_answer_id + '&item_id=' + item_id;
+                        layer.open({
+                            type: 2,
+                            title: '判卷',
+                            shadeClose: true,
+                            area: ['800px', '600px'],
+                            content: url,
+                            end: function () {
+                                that.getList()
+                            }
+                        });
+                    },
                     getList: function () {
                         var _this = this;
                         $.ajax({

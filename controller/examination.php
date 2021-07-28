@@ -8,10 +8,10 @@
 namespace app\question\controller;
 
 use app\common\controller\AdminController;
+use app\question\model\QuestionExaminationAnswerResultModel;
 use app\question\model\QuestionItemOptionModel;
 use think\facade\View;
 use app\question\model\QuestionExaminationModel;
-use app\question\model\ExaminationItemModel;
 use app\question\model\QuestionExaminationAnswerModel;
 use app\question\model\QuestionExaminationItemModel;
 use app\question\model\QuestionExaminationAnswerItemModel;
@@ -93,7 +93,7 @@ class examination extends AdminController
         $query = request()->param('query');
         //删除了 #
         $query = str_replace('#', '', $query);
-        $items = ExaminationItemModel::where('item_kind', ExaminationItemModel::ITEM_KIND_EXAMINATION)
+        $items = QuestionItemModel::where('item_kind', QuestionItemModel::ITEM_KIND_QUESTION)
             ->where(function ($q) use ($query)
             {
                 $q->where('item_id', 'like', "%{$query}%")
@@ -173,7 +173,15 @@ class examination extends AdminController
             $examination_id = $examination_answer->examination_id;
             $examination_items = QuestionExaminationItemModel::where('examination_id', $examination_id)
                 ->append(['option_values', 'option_values_analysis', 'right_key'])
-                ->with(['bind_item'])
+                ->with([
+                    'bind_item',
+                    'resultItem' => function ($query) use ($examination_answer_id)
+                    {
+                        $query->where('examination_answer_id', $examination_answer_id)->bind([
+                            'option_values', 'result_status' => 'status', 'is_answer_correct'
+                        ]);
+                    }
+                ])
                 ->withAttr('option_values_analysis', function ($value, $data) use ($examination_id)
                 {
                     $option_values_analysis = QuestionExaminationAnswerItemModel::where('examination_id',
@@ -189,12 +197,6 @@ class examination extends AdminController
                         'list'  => $option_values_analysis,
                         'total' => $total
                     ];
-                })
-                ->withAttr('option_values', function ($value, $data) use ($examination_answer_id)
-                {
-                    $option_values = QuestionExaminationAnswerItemModel::where('examination_answer_id',
-                        $examination_answer_id)->where('item_id', $data['item_id'])->column('option_value');
-                    return implode(',', $option_values);
                 })
                 ->order('number', 'ASC')
                 ->select();
@@ -232,4 +234,42 @@ class examination extends AdminController
         return View::fetch('analysis');
     }
 
+    function gradeItem()
+    {
+        $examination_answer_id = request()->param('examination_answer_id', 0);
+        $item_id = request()->param('item_id', 0);
+        if (request()->isPost()) {
+            $answer_result = QuestionExaminationAnswerResultModel::where('item_id', $item_id)
+                ->where('examination_answer_id', $examination_answer_id)->findOrEmpty();
+            if ($answer_result->isEmpty()) {
+                return self::makeJsonReturn(false, [], '找不到该回答记录');
+            }
+            $answer_result->is_answer_correct = request()->param('is_answer_correct', 0);
+            $answer_result->score = request()->param('score', 0);
+            $answer_result->status = QuestionExaminationAnswerResultModel::STATUS_ANSWERED;
+            if ($answer_result->save()) {
+                return self::makeJsonReturn(true, [], '操作成功');
+            } else {
+                return self::makeJsonReturn(false, [], '操作失败');
+            }
+        }
+        $answer_result = QuestionExaminationAnswerResultModel::where('item_id', $item_id)
+            ->where('examination_answer_id', $examination_answer_id)
+            ->with([
+                'item' => function ($query)
+                {
+                    $query->bind(['content']);
+                }
+            ])
+            ->append(['true_options'])
+            ->withAttr('true_options', function ($value, $data)
+            {
+                return implode(',',
+                    QuestionItemOptionModel::where('item_id', $data['item_id'] ?? 0)->column('reference_answer'));
+            })
+            ->findOrEmpty();
+        return View::fetch('grade_item', [
+            'answer_result' => $answer_result
+        ]);
+    }
 }

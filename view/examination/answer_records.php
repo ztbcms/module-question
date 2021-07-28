@@ -27,7 +27,7 @@
                             border
                             style="width: 100%">
                         <el-table-column
-                                prop="examination_id"
+                                prop="examination_answer_id"
                                 label="编号"
                                 width="80">
                         </el-table-column>

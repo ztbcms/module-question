@@ -4,6 +4,7 @@
 namespace app\question\model;
 
 use think\Model;
+use think\model\relation\HasOne;
 
 class QuestionExaminationItemModel extends Model
 {
@@ -13,9 +14,14 @@ class QuestionExaminationItemModel extends Model
     protected $updateTime = false;
     protected $createTime = false;
 
+    public function resultItem(): HasOne
+    {
+        return $this->hasOne(QuestionExaminationAnswerResultModel::class, 'item_id', 'item_id');
+    }
+
     /**
      * 试卷下每个题目的列表
-     * @return \think\model\relation\HasOne
+     * @return HasOne
      */
     public function bindItem()
     {
@@ -30,7 +36,7 @@ class QuestionExaminationItemModel extends Model
 
     /**
      * 试卷下每个题目的列表
-     * @return \think\model\relation\HasOne
+     * @return HasOne
      */
     public function bindApiItem()
     {
@@ -70,12 +76,10 @@ class QuestionExaminationItemModel extends Model
      */
     function getAccuracyAttr($value, $data): string
     {
-        $true_count = QuestionExaminationAnswerItemModel::where('item_id', $data['item_id'])
-            ->where('is_answer_correct', QuestionExaminationAnswerItemModel::ANSWER_CORRECT_TRUE)
-            ->where('status', QuestionExaminationAnswerItemModel::STATUS_CONFIRM)
+        $true_count = QuestionExaminationAnswerResultModel::where('item_id', $data['item_id'])
+            ->where('is_answer_correct', QuestionExaminationAnswerResultModel::ANSWER_CORRECT_TRUE)
             ->count();
-        $total_count = QuestionExaminationAnswerItemModel::where('item_id', $data['item_id'])
-            ->where('status', QuestionExaminationAnswerItemModel::STATUS_CONFIRM)
+        $total_count = QuestionExaminationAnswerResultModel::where('item_id', $data['item_id'])
             ->count();
         if ($total_count > 0) {
             return (sprintf('%0.4f', $true_count / $total_count) * 100).'%';
@@ -86,12 +90,10 @@ class QuestionExaminationItemModel extends Model
 
     function getAnswerCountAttr($value, $data): string
     {
-        $true_count = QuestionExaminationAnswerItemModel::where('item_id', $data['item_id'])
-            ->where('is_answer_correct', QuestionExaminationAnswerItemModel::ANSWER_CORRECT_TRUE)
-            ->where('status', QuestionExaminationAnswerItemModel::STATUS_CONFIRM)
+        $true_count = QuestionExaminationAnswerResultModel::where('item_id', $data['item_id'])
+            ->where('is_answer_correct', QuestionExaminationAnswerResultModel::ANSWER_CORRECT_TRUE)
             ->count();
-        $total_count = QuestionExaminationAnswerItemModel::where('item_id', $data['item_id'])
-            ->where('status', QuestionExaminationAnswerItemModel::STATUS_CONFIRM)
+        $total_count = QuestionExaminationAnswerResultModel::where('item_id', $data['item_id'])
             ->count();
         return $true_count.'/'.$total_count;
     }

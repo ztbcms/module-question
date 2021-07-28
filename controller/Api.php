@@ -12,6 +12,7 @@ namespace app\question\controller;
 
 
 use app\BaseController;
+use app\question\model\QuestionExaminationAnswerResultModel;
 use app\question\model\QuestionExaminationModel;
 use app\question\model\QuestionQuestionnaireAnswerItemModel;
 use app\question\model\QuestionQuestionnaireAnswerModel;
@@ -153,6 +154,9 @@ class Api extends BaseController
         {
             //关联的试卷记录也需要更新状态
             $examination_answer->save();
+            //改判试卷
+            QuestionExaminationAnswerResultModel::gradeExam($examination_answer->examination_answer_id);
+
             QuestionExaminationAnswerItemModel::where('examination_answer_id',
                 $examination_answer->examination_answer_id)
                 ->update([

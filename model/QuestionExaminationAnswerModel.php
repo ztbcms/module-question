@@ -126,16 +126,15 @@ class QuestionExaminationAnswerModel extends Model
     {
         $examination_answer_id = $data['examination_answer_id'] ?? 0;
         //获取按题目分组所有答题总数
-        $total_count = QuestionExaminationAnswerItemModel::where('examination_answer_id',
+        $total_count = QuestionExaminationAnswerResultModel::where('examination_answer_id',
             $examination_answer_id)
-            ->group('item_id')->count();
+            ->count();
 
         //获取按题目分组所有答错
-        $error_count = QuestionExaminationAnswerItemModel::where('examination_answer_id',
+        $true_count = QuestionExaminationAnswerResultModel::where('examination_answer_id',
             $examination_answer_id)
-            ->where('is_answer_correct', QuestionExaminationAnswerItemModel::ANSWER_CORRECT_FALSE)
-            ->group('item_id')->count();
-        return ($total_count - $error_count).'/'.$total_count;
+            ->where('is_answer_correct', QuestionExaminationAnswerItemModel::ANSWER_CORRECT_TRUE)->count();
+        return $true_count.'/'.$total_count;
     }
 
     function getConfirmTimeAttr($value)

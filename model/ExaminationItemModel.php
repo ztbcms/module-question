@@ -20,25 +20,4 @@ class ExaminationItemModel extends Model
     const ITEM_TYPE_CHECK = 1;
     const ITEM_TYPE_FILL = 2;
 
-    /**
-     * 判断题目类型
-     * @param $value
-     * @param $data
-     * @return string
-     */
-    function getItemTypeTextAttr($value, $data)
-    {
-        if ($data['item_type'] == self::ITEM_TYPE_RADIO) {
-            return "单选题";
-        }
-        if ($data['item_type'] == self::ITEM_TYPE_CHECK) {
-            return "多选题";
-        }
-        if ($data['item_type'] == self::ITEM_TYPE_FILL) {
-            return "填空题";
-        }
-
-        return $value;
-    }
-
 }
