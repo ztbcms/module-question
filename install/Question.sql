@@ -1,6 +1,5 @@
 SET NAMES utf8mb4;
-SET
-FOREIGN_KEY_CHECKS = 0;
+SET FOREIGN_KEY_CHECKS = 0;
 
 -- ----------------------------
 -- Table structure for cms_question_examination
@@ -77,7 +76,7 @@ CREATE TABLE `cms_question_examination_answer_result`
     `update_time`                  int(11) DEFAULT '0' COMMENT '更新时间',
     `delete_time`                  int(11) DEFAULT '0' COMMENT '删除时间',
     PRIMARY KEY (`examination_answer_result_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=1  CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for cms_question_examination_item
@@ -194,5 +193,4 @@ CREATE TABLE `cms_question_questionnaire_item`
     PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC;
 
-SET
-FOREIGN_KEY_CHECKS = 1;
+SET FOREIGN_KEY_CHECKS = 1;
