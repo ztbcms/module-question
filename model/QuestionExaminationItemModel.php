@@ -23,7 +23,7 @@ class QuestionExaminationItemModel extends Model
      * 试卷下每个题目的列表
      * @return HasOne
      */
-    public function bindItem()
+    public function bindItem(): HasOne
     {
         return $this->hasOne(QuestionItemModel::class, 'item_id', 'item_id')
             ->withAttr('content', function ($value, $data)
@@ -31,19 +31,19 @@ class QuestionExaminationItemModel extends Model
                 return '#'.$data['item_id'].' '.$value;
             })
             ->append(['item_type_text'])
-            ->bind(['content', 'item_type', 'item_type_text']);
+            ->bind(['content', 'item_type', 'item_type_text', 'item_kind']);
     }
 
     /**
      * 试卷下每个题目的列表
      * @return HasOne
      */
-    public function bindApiItem()
+    public function bindApiItem(): HasOne
     {
         return $this->hasOne(QuestionItemModel::class, 'item_id', 'item_id')
             ->with(['item_options'])
             ->append(['item_type_text'])
-            ->bind(['content', 'item_type', 'item_type_text', 'item_options']);
+            ->bind(['content', 'item_type', 'item_type_text', 'item_options', 'item_kind']);
     }
 
     /**

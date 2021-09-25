@@ -10,6 +10,7 @@ namespace app\question\model;
 
 
 use think\Model;
+use think\model\relation\HasOne;
 
 class QuestionQuestionnaireItemModel extends Model
 {
@@ -19,7 +20,7 @@ class QuestionQuestionnaireItemModel extends Model
     protected $updateTime = false;
     protected $createTime = false;
 
-    public function bindItem()
+    public function bindItem(): HasOne
     {
         return $this->hasOne(QuestionItemModel::class, 'item_id', 'item_id')
             ->withAttr('content', function ($value, $data)
@@ -27,14 +28,14 @@ class QuestionQuestionnaireItemModel extends Model
                 return '#'.$data['item_id'].' '.$value;
             })
             ->append(['item_type_text'])
-            ->bind(['content', 'item_type', 'item_type_text']);
+            ->bind(['content', 'item_type', 'item_type_text', 'item_kind']);
     }
 
-    public function bindApiItem()
+    public function bindApiItem(): HasOne
     {
         return $this->hasOne(QuestionItemModel::class, 'item_id', 'item_id')
             ->with(['item_options'])
             ->append(['item_type_text'])
-            ->bind(['content', 'item_type', 'item_type_text', 'item_options']);
+            ->bind(['content', 'item_type', 'item_type_text', 'item_options', 'item_kind']);
     }
 }

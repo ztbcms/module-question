@@ -109,10 +109,8 @@ class Item extends AdminController
         if (Request::isGet() && $_action == 'getDetail') {
             $item_id = Request::param('item_id', '', 'trim');
             $res = QuestionItemModel::getDetails($item_id);
-            return json($res);
+            return self::makeJsonReturn(true, $res);
         }
         return view('edit_item', ['item_kind' => $item_kind]);
     }
-
-
 }

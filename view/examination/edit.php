@@ -17,7 +17,8 @@
                             <el-radio :label="0">顺序</el-radio>
                             <el-radio :label="1">
                                 随机
-                                <el-input style="width: 200px" v-model="form.number" placeholder="请输入随机答题的数量"
+                                <el-input style="width: 200px" v-model="form.number" type="number"
+                                          placeholder="请输入随机答题的数量"
                                           v-bind:disabled="form.type==0"></el-input>
                             </el-radio>
                         </el-radio-group>
@@ -131,7 +132,7 @@
                                     title: detail.title,
                                     description: detail.description,
                                     type: parseInt(detail.type),
-                                    number: parseInt(detail.number),
+                                    number: detail.number ? parseInt(detail.number) : '',
                                 }
                                 _this.select_item_list = detail.item_list
                             }

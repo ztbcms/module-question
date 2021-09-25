@@ -41,7 +41,8 @@ class QuestionItemModel extends Model
         $item_id = $question_item->item_id;
         //删除已有的选项
         if ($item_id) {
-            QuestionItemOptionModel::destroy(function ($query) use ($item_id) {
+            QuestionItemOptionModel::destroy(function ($query) use ($item_id)
+            {
                 $query->where('item_id', $item_id);
             });
         }
@@ -140,29 +141,31 @@ class QuestionItemModel extends Model
      * @throws \think\db\exception\DbException
      * @throws \think\db\exception\ModelNotFoundException
      */
-    static function getDetails($item_id)
+    static function getDetails($item_id): array
     {
-        $data = Db::name('question_item')->field('item_id, item_kind, item_type,content')->where('item_id',
-            $item_id)->find();
-        $data2 = Db::name('question_item_option')->where('item_id', $item_id)->select()->toArray();
-        $data['item_kind'] = (string) $data['item_kind'];
-        $data['item_type'] = (string) $data['item_type'];
+        $question_item = QuestionItemModel::where('item_id', $item_id)
+            ->field(['item_id', 'item_kind', 'item_type', 'content'])
+            ->findOrEmpty()->toArray();
+        $item_options = QuestionItemOptionModel::where('item_id', $item_id)->select()->toArray();
+        $question_item['item_kind'] = (string) $question_item['item_kind'] ?? 0;
+        $question_item['item_type'] = (string) $question_item['item_type'] ?? 0;
+
         $radio_data = [];
         $checkbox_data = [];
         $pack = [];
-        foreach ($data2 as $item) {
-            if ($item['option_type'] == '0') {
-                $radio_data[] = $item;
+        foreach ($item_options as $option) {
+            if ($option['option_type'] == '0') {
+                $radio_data[] = $option;
             } else {
-                if ($item['option_type'] == '1') {
-                    $checkbox_data[] = $item;
+                if ($option['option_type'] == '1') {
+                    $checkbox_data[] = $option;
                 } else {
-                    $pack[] = $item;
+                    $pack[] = $option;
                 }
             }
         }
-        $res = ['form' => $data, 'radio_data' => $radio_data, 'checkbox_data' => $checkbox_data, 'pack' => $pack];
-        return BaseService::createReturn(true, $res);
-
+        return [
+            'form' => $question_item, 'radio_data' => $radio_data, 'checkbox_data' => $checkbox_data, 'pack' => $pack
+        ];
     }
 }
